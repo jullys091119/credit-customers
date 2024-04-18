@@ -14,6 +14,7 @@ import Home from '../components/Home';
 import Perfil from '../screens/Perfil';
 import Alphabet from '../components/Alphabet';
 import Register from '../components/Register';
+import Customers from '../screens/Customers';
 
 
 function HomeTabs() {
@@ -92,7 +93,22 @@ function MyStack() {
         <Stack.Screen
           name="Register"
           component={Register}
-          options={{ headerShown: false }}
+          options={{
+            title: "",
+            headerStyle: {
+              backgroundColor: '#f5f5f5',
+            },
+          }}
+        />
+        <Stack.Screen
+          name="Customers"
+          component={Customers}
+          options={{
+            title: "",
+            headerStyle: {
+              backgroundColor: '#f5f5f5',
+            },
+          }}
         />
       </Stack.Navigator>
     </NavigationContainer>
