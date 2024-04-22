@@ -1,8 +1,6 @@
 import { useState, createContext, useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
-import { CommonActions } from "@react-navigation/native";
-import { useNavigation } from "@react-navigation/native";
 
 const loginContext = createContext();
 
@@ -11,11 +9,55 @@ const ProviderLogin = ({ children, navigation }) => {
   const [tk, setTk] = useState("");
   const [users, setUsers] = useState("");
   const  [showHome, setShowHome] = useState(false)
+  const [user, setUser] = useState("")
+  const [pass, setPass] = useState("")
 
+  const getSalesNoteBook = async (id) => {
+    const options = {
+      method: 'GET',
+      url: 'https://elalfaylaomega.com/credit-customer/jsonapi/node/sales_notebook?filter[field_sales_id_user]='+ id,
+    };  
+    return await axios.request(options).then(function (response) {
+     let totalSales = []
+      response.data.data.forEach((data)=> {
+      const dataSales =  {
+        date: data.attributes.field_sales_date,
+        total: data.attributes.field_sales_total
+      }
+      totalSales.push(dataSales)
+    })
+    return totalSales
+    }).catch(function (error) {
+      console.error(error);
+    });
+  }
+  
+  const getSalesNoteBookHome = async () => {
+    const uid = await AsyncStorage.getItem("@UID");
+    const options = {
+      method: 'GET',
+      url: 'https://elalfaylaomega.com/credit-customer/jsonapi/node/sales_notebook?filter[field_sales_id_user]=' + uid,
+    };  
+    return await axios.request(options).then(function (response) {
+     let totalSales = []
+      console.log(response.data)
+      response.data.data.forEach((data)=> {
+       const dataSales =  {
+        date: data.attributes.field_sales_date,
+        total: data.attributes.field_sales_total
+      }
+      totalSales.push(dataSales)
+    })
+    return totalSales
+    }).catch(function (error) {
+      console.error(error);
+    });
+  }
+  
   const checkLoginStatus = async () => {
+    console.log("recogiendo las credenciales")
     const token = await AsyncStorage.getItem("@TOKEN");
     const token_logout = await AsyncStorage.getItem("@TOKEN_LOGOUT");
-    console.log(token, "<<<<<<current token", token_logout);
     setTk(token);
     setTokenLogout(token_logout);
   };
@@ -25,12 +67,14 @@ const ProviderLogin = ({ children, navigation }) => {
       method: "POST",
       url: "https://elalfaylaomega.com/credit-customer/user/login",
       params: { _format: "json" },
-      data: { name: "admin", pass: "pass" },
+      data: { name: user , pass: pass },
     };
     try {
       const response = await axios.request(options);
+      console.log(response.data.current_user.uid, "current user")
       await AsyncStorage.setItem("@TOKEN", response.data.csrf_token);
       await AsyncStorage.setItem("@TOKEN_LOGOUT", response.data.logout_token);
+      await AsyncStorage.setItem("@UID", response.data.current_user.uid);
       return response.status;
     } catch (error) {
       console.error("Login error:", error);
@@ -50,6 +94,7 @@ const ProviderLogin = ({ children, navigation }) => {
         try {
           await AsyncStorage.removeItem("@TOKEN");
           await AsyncStorage.removeItem("@TOKEN_LOGOUT");
+          await AsyncStorage.removeItem("@UID");
           console.log("Cleared tokens");
         } catch (error) {
           console.error("Error clearing tokens:", error);
@@ -61,7 +106,6 @@ const ProviderLogin = ({ children, navigation }) => {
   };
 
   const getUsers = (letter) => {
-    console.log(letter)
     const options = {
       method: 'GET',
       url: 'https://elalfaylaomega.com/credit-customer/jsonapi/user/user',
@@ -92,6 +136,7 @@ const ProviderLogin = ({ children, navigation }) => {
   }
 
   const getCurrentUser = (id) => {
+    console.log("current user")
     const options = {
       method: 'GET',
       url: 'https://elalfaylaomega.com/credit-customer/user/1?_format=json',
@@ -100,21 +145,34 @@ const ProviderLogin = ({ children, navigation }) => {
     };
     
     return axios.request(options).then(function (response) {
-      return response.data.status;
+      return response.data.status; 
     }).catch(function (error) {
       console.error(error);
     });
-  }
+  } 
+
+  
+  useEffect(( ) => {  
+   checkLoginStatus()
+   
+  },[])
+   
 
   return (
     <loginContext.Provider value={{ login,
      logout,
      tk,
      checkLoginStatus,
+     getSalesNoteBook,
+     getSalesNoteBookHome,
+     getCurrentUser,
      getUsers,
      setUsers,
      users,
-     getCurrentUser,
+     setUser,
+     setPass,
+     user,
+     pass,
      setShowHome,
      showHome
      }}>

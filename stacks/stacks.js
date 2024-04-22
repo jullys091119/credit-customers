@@ -43,11 +43,11 @@ function HomeTabs() {
         }}
       />
       <Tab.Screen
-        name="Alphabet"
+        name="Customer Notebook"
         component={Alphabet}
         options={{
           tabBarLabel: "Notebook",
-          headerShown: false,
+          headerShown: true,
           tabBarIcon: ({ color, size }) => (
             <Icon source="dots-grid" color="#e6008c" size={40} />
           ),
@@ -87,7 +87,7 @@ function MyStack() {
         />
         <Stack.Screen
           name="HomeScreen"
-          component={HomeTabs}
+          component={Home}
           options={{ headerShown: false }}
         />
         <Stack.Screen

@@ -3,25 +3,23 @@ import tw from 'twrnc';
 import {
 View,
 Text,
-StyleSheet
+StyleSheet,
+KeyboardAvoidingView,
+Image,
+Button
 } from 'react-native'
 import axios from 'axios';
-import { TextInput, TouchableOpacity } from 'react-native-gesture-handler';
+import { TouchableOpacity } from 'react-native-gesture-handler';
 import { Avatar} from 'react-native-paper';
 import { loginContext } from '../context/context';
-import { Icon } from 'react-native-paper';
+import { Icon,TextInput, } from 'react-native-paper';
 
 const Login = ({navigation}) => {
-  const [user, setUser] = useState("admin")
-  const [pass, setPass] = useState("pass")
-  const [tk, setTk]= useState("")
-  
-
-  const { login,logout } = useContext(loginContext);
-
-
+  const { login,logout,setUser,setPass, user,pass } = useContext(loginContext);
+  const [showPassword, setShowPassword] = useState(false);
   const handleLogin = async () => {
     let status = await login()
+    console.log(status, "status")
     if (status == 200) {
       navigation.navigate("HomeScreen")
     } 
@@ -33,41 +31,49 @@ const Login = ({navigation}) => {
     } catch (error) {
     }
   };
- 
+
   const AvataLogin = () => (
     <TouchableOpacity onPress={()=> {handleLogin()}}>
       <Avatar.Icon size={69} style={[styles.iconGo]} color='white' icon="login"/>
     </TouchableOpacity>
   );
- 
   return (
-    <>
-    <View  style={[styles.container]}>
-      <View style={[styles.bubleOne]}></View>
-      <View style={[styles.bubleTwoo]}></View>
-      <View style={[styles.bubleThree]}>
-       <Text style={[styles.welcome]}>Welcome</Text>
-       <Text style={[styles.back]}>Back</Text>
+    <KeyboardAvoidingView style={[styles.container]}>
+      <View style={[styles.containerWelcome]}>
+        <View>
+          <Image source={require('../assets/images/tienda.png')} style={{width: 60, height: 60}}/>
+        </View>
+        <View>
+          <Text style={{fontSize: 40, fontWeight: "600"}}>Hello,</Text>
+          <Text style={{fontSize: 20}}>Please Login to</Text>
+          <Text style={{fontSize: 20}}>Your Account!</Text>
+        </View>
       </View>
-      <View style={[styles.containerForm]}>
-        <TextInput style={[styles.input, tw` bg-white pl-10`]} placeholder='User'  onChangeText={user => setUser(user)}
-        value={user}/>
-        <TextInput style={[styles.input, tw` bg-white pl-10`]} placeholder='Password' onChangeText={pass => setPass(pass)}
-        value={pass}/>
-      </View>
-      <View style={[styles.containerSignin]}>
-        <Text style={[styles.signin]}>Sign in</Text>
-        <AvataLogin/>
-      </View>
-
       <View>
-        <TouchableOpacity onPress={()=>{openRegister()}} style={[styles.containerSignUp]}>
-         <Icon source="account-plus-outline" color="#4E8CFE" size={26} />
-         <Text style={[styles.signUp]}>Sing up</Text> 
+        <TextInput
+          mode='flat'
+          label="User name"
+          onChangeText={txt => setUser(txt)}
+          value={user}
+          style={[styles.input]}
+        />
+        <TextInput
+          mode='flat'
+          secureTextEntry={showPassword?true:false}
+          label="password"
+          value={pass}
+          onChangeText={txt => setPass(txt)}
+          right={<TextInput.Icon icon="eye" placeholder='Password' onPress={() => {setShowPassword(!showPassword)}} />}
+          style={[styles.input]}
+        />
+        <TouchableOpacity style={{height: 50, backgroundColor: "#2196F3", padding: 10, marginVertical: 30}} onPress={handleLogin}>
+          <Text style={[styles.loginText]}>LOGIN</Text>
         </TouchableOpacity>
+        <View style={[styles.containerSingUp]}>
+          <Text>Don't have accout?</Text><TouchableOpacity><Text style={[styles.singup]} onPress={openRegister}>Sing up</Text></TouchableOpacity>
+        </View>
       </View>
-    </View>
-    </>
+    </KeyboardAvoidingView>
   )
 }
 
@@ -76,100 +82,40 @@ const styles =  StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    position: "relative",
-    backgroundColor: "#D7E5FF"
-  },
-  bubleOne: {
-   backgroundColor: "#9BBEFD",
-   height: 300,
-   width: 300,
-   borderBottomEndRadius: 240,
-   position: "absolute",
-   top:-100,
-   left: -100,
-   zIndex:22
-  },
-  bubleTwoo: {
-    backgroundColor: "#9BBEFD",
-    height: 400,
-    width: 490,
-    borderRadius: 300,
-    position: "absolute",
-    top: 0,
-    right: -330,
-    zIndex: -20
-  },
-  bubleThree: {
-    backgroundColor: "#4E8CFE",
-    height:360,
-    width: 600,
-    zIndex: 3,
-    position: "absolute",
-    top: 0,
-    opacity: .90,
-    borderBottomLeftRadius: 210,
-    borderBottomEndRadius: 350
-  },
-  tabs: {
-    height: 340,
-    width: 300
-  },
-  welcome: {
-    fontSize: 40,
-    position: "absolute" ,
-    top: 220,
-    left: 140,
-    color: "white"
-  },
-  back: {
-    marginVertical: 30,
-    fontSize: 57,
-    position: "absolute",
-    top: 230,
-    left: 140,
-    color: "white"
-  },
-  containerForm: {
-   marginTop: 390
   },
   input: {
     width: 300,
-    height:60,
-    borderRadius: 16,
-    marginVertical: 10
+    marginVertical: 10,
+    backgroundColor: "none"
   },
-  containerSignin: {
-   width: 300,
-   height: 120,
-   paddingLeft: 10,
-   marginHorizontal: 190,
-   display: "flex",
-   alignItems: "center",
-   flexDirection: "row",
-   justifyContent: "space-between"
+  button: {
+    height: 30
   },
-  containerSignUp: {
-   direction: "flex",
-   flexDirection: "row",
-   justifyContent: "flex-start",
-   alignItems: "center",
-   width: 300
-  },
-  signin: {
-    fontSize: 30,
-    fontWeight: "600",
-  },
-  signUp: {
-    fontSize: 18,
+  containerWelcome: {
     alignSelf: "flex-start",
-    fontWeight: "600",
-    marginLeft: 4,
-    color: "#4E8CFE"
+    marginHorizontal: 34,
+    display: "flex",
+    flexDirection: "row-reverse",
+    alignItems:"center",
+    gap: 80
   },
-  iconGo: {
-   backgroundColor: "#4E8CFE",
-   marginLeft: 120
+  loginText: {
+    color: "white",
+    fontSize: 20,
+    fontWeight:"500",
+    textAlign: "center",
+  },
+  singup: {
+    fontSize: 20,
+    color: "#2196F3"
+  },
+  containerSingUp: {
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10
   }
+
 })
 export default Login
 
