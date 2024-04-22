@@ -5,15 +5,10 @@ import {
   Text,
   View,
   TextInput,
-  SafeAreaView,
   StyleSheet,
   TouchableOpacity,
-  TouchableWithoutFeedback,
 } from "react-native";
 import axios from "axios";
-
-
-
 
 
 const Register = ({ navigation }) => {
