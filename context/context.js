@@ -45,7 +45,6 @@ const ProviderLogin = ({ children, navigation }) => {
     };  
     return await axios.request(options).then(function (response) {
      let totalSales = []
-      console.log(response.data)
       response.data.data.forEach((data)=> {
        const dataSales =  {
         date: data.attributes.field_sales_date,
@@ -107,7 +106,6 @@ const ProviderLogin = ({ children, navigation }) => {
           await AsyncStorage.removeItem("@TOKEN");
           await AsyncStorage.removeItem("@TOKEN_LOGOUT");
           await AsyncStorage.removeItem("@UID");
-          setSales("")
           // console.log("Cleared tokens");
         } catch (error) {
           console.error("Error clearing tokens:", error);
@@ -163,11 +161,7 @@ const ProviderLogin = ({ children, navigation }) => {
     });
   } 
 
-  
-  useEffect(( ) => {  
- 
-  },[mounted])
-   
+
 
   return (
     <loginContext.Provider value={{ login,

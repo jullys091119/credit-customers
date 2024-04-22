@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useReducer, useState, useRef } from 'react'
 import { useContext } from 'react';
 import { loginContext } from '../context/context';
 import { View, StyleSheet, Text, Image } from 'react-native'
-import { Appbar, Avatar, Card } from 'react-native-paper';
+import { Appbar, Avatar, Card,ActivityIndicator } from 'react-native-paper';
 import axios from 'axios'
 import { FlatList } from 'react-native-gesture-handler';
 import moment from 'moment';
@@ -12,10 +12,12 @@ moment.locale('es');
 
 const Home = ({navigation}) => {
 
-  const {logout,getSalesNoteBookHome,setMounted,nameUser,mounted} = useContext(loginContext)
+  const {logout,getSalesNoteBookHome,nameUser} = useContext(loginContext)
   const [data, setData] = useState()
   const [total, setTotal] = useState()
-
+  const  [showSales, setShowSales] = useState(false)
+  const currenCard = useRef(null)
+ 
   const handleLogout = () =>  { 
     try {
       logout()
@@ -26,9 +28,8 @@ const Home = ({navigation}) => {
     }
   }  
   
-  useEffect(() => {
+  useEffect(() => { 
     const fetchData = async () => {
-      setMounted(true)
       try {
         const data = await getSalesNoteBookHome();
         setData(data)
@@ -38,10 +39,16 @@ const Home = ({navigation}) => {
         console.error("Error fetching data:", error);
       }
     };
-    fetchData(); // Llama a la función fetchData() dentro de useEffect
-    console.log(mounted, "montado")
-  }, []);
-  
+    fetchData(); 
+
+    if(currenCard.current == null) {
+      setShowSales(true)
+    } else {
+      setShowSales(false)
+    }
+  }, [currenCard.current]);
+
+
   const AvatarIconPicture = ()  => (
     <>
     <Avatar.Image 
@@ -59,7 +66,6 @@ const Home = ({navigation}) => {
         <AvatarIconPicture/>
          <Text style={{fontSize: 19, fontWeight:"600"}}>{nameUser !== null && nameUser.charAt(0).toUpperCase() + nameUser.slice(1)}</Text>
       </View>
-
     </Appbar.Header>
   );
   
@@ -84,7 +90,7 @@ const Home = ({navigation}) => {
       <FlatList
        data={data}
         renderItem={({item,index}) => (
-          <View style={[styles.containerSales]} key={index}>
+          <View style={[styles.containerSales]} key={index} ref={currenCard}>
             <Card style={[styles.card]}>
               <View>
                 <Image style={{width: 58, height: 58}}  source={require('../assets/images/ventas.png')}/>
@@ -102,8 +108,8 @@ const Home = ({navigation}) => {
                 <Image style={{width: 28, height: 28, marginTop: -6, alignSelf: "flex-end"}}  source={require('../assets/images/dolar.png')}/>{item.total}</Text>
               </View>
             </Card>
-          </View>
-        )}
+        </View>
+      )}
     />
     )
   }
@@ -111,6 +117,7 @@ const Home = ({navigation}) => {
    <View style={[styles.container]}>
     <AppheaderCustom/>
     <CartSalesCustomers/>
+    <ActivityIndicator animating={showSales} color="#e6008c" size={30} style={{marginVertical: showSales? 30:0}} />
     <SalesNoteBook/>
    </View>
   )
@@ -118,8 +125,8 @@ const Home = ({navigation}) => {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    backgroundColor: "white",
+    flex: 1, 
+    backgroundColor: "white"
   },
   containerHeader: {
     marginVertical: 30,
@@ -138,6 +145,7 @@ const styles = StyleSheet.create({
     display: "flex",
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "center",
     gap: 15,
     marginHorizontal: 20,
     marginVertical: 20
