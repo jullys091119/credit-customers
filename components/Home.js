@@ -12,50 +12,54 @@ moment.locale('es');
 
 const Home = ({navigation}) => {
 
-  const {logout,getSalesNoteBookHome} = useContext(loginContext)
+  const {logout,getSalesNoteBookHome,setMounted,nameUser,mounted} = useContext(loginContext)
   const [data, setData] = useState()
   const [total, setTotal] = useState()
-  const [mounted, setMounted] = useState(false)
-  console.log(data, "data desde  home")
 
-  const handleLogout = () =>  {
+  const handleLogout = () =>  { 
     try {
       logout()
       navigation.navigate("LoginScreen")
+    
     } catch (error) {
       console.log(error, "No se puede desloguearse") 
     }
   }  
   
-  
   useEffect(() => {
     const fetchData = async () => {
+      setMounted(true)
       try {
         const data = await getSalesNoteBookHome();
-        setData(data);
+        setData(data)
         const salesTotal = data.reduce((total, item) => parseInt(total) + parseInt(item.total), 0);
         setTotal(salesTotal);
-        setMounted(true);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
     };
-  
     fetchData(); // Llama a la función fetchData() dentro de useEffect
-  
+    console.log(mounted, "montado")
   }, []);
   
   const AvatarIconPicture = ()  => (
+    <>
     <Avatar.Image 
       size={44} 
       source={require('../assets/julian.jpg')}
     />
+    </>
+    
   );
 
   const AppheaderCustom = () => (
     <Appbar.Header style={[styles.containerHeader]}>
       <Appbar.Action icon="keyboard-backspace"  size={27}  color="#e6008c" onPress={() => {handleLogout()}} />
-      <AvatarIconPicture/>
+      <View  style={[styles.containerPicture]}>
+        <AvatarIconPicture/>
+         <Text style={{fontSize: 19, fontWeight:"600"}}>{nameUser !== null && nameUser.charAt(0).toUpperCase() + nameUser.slice(1)}</Text>
+      </View>
+
     </Appbar.Header>
   );
   
@@ -170,6 +174,11 @@ const styles = StyleSheet.create({
     alignItems: "flex-end",
     paddingLeft: 16,
     gap:10,
+  },
+  containerPicture: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center"
   }
 })
 

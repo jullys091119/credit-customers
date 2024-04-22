@@ -18,8 +18,12 @@ import Customers from '../screens/Customers';
 
 
 function HomeTabs() {
+  const { uidUser } = useContext(loginContext);
+  console.log(uidUser)
   return (
-    <Tab.Navigator>
+    <Tab.Navigator initialRouteName='HomeScreen'>
+      {/* {uidUser !== "1" &&
+      } */}
       <Tab.Screen
         name="MainHome"
         component={Home}
@@ -42,17 +46,20 @@ function HomeTabs() {
           ),
         }}
       />
-      <Tab.Screen
-        name="Customer Notebook"
-        component={Alphabet}
-        options={{
-          tabBarLabel: "Notebook",
-          headerShown: true,
-          tabBarIcon: ({ color, size }) => (
-            <Icon source="dots-grid" color="#e6008c" size={40} />
-          ),
-        }}
-      />
+      {
+        uidUser == 1  &&
+        <Tab.Screen
+          name="Credit customers"
+          component={Alphabet}
+          options={{
+            tabBarLabel: "Notebook",
+            headerShown: true,
+            tabBarIcon: ({ color, size }) => (
+              <Icon source="dots-grid" color="#e6008c" size={40} />
+            ),
+          }}
+        />
+      }
 
     </Tab.Navigator>
   );
@@ -64,9 +71,9 @@ function MyStack() {
     checkLoginStatus();
   }, []);
 
-  return (
+  return ( 
     <NavigationContainer>
-      <Stack.Navigator>
+      <Stack.Navigator >
         {tk ? (
           <Stack.Screen
             name="Home"
@@ -80,14 +87,14 @@ function MyStack() {
             options={{ headerShown: false }}
           />
         )}
+          <Stack.Screen
+            name="HomeScreen"
+            component={HomeTabs}
+            options={{ headerShown: false }}
+          />
         <Stack.Screen
           name="LoginScreen"
           component={Login}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="HomeScreen"
-          component={Home}
           options={{ headerShown: false }}
         />
         <Stack.Screen
