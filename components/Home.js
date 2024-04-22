@@ -4,7 +4,6 @@ import { loginContext } from '../context/context';
 import { View, StyleSheet, Text, Image } from 'react-native'
 import { Appbar, Avatar, Card } from 'react-native-paper';
 import axios from 'axios'
-import { getSalesNoteBook } from '../Fetch';
 import { FlatList } from 'react-native-gesture-handler';
 import moment from 'moment';
 import 'moment/locale/es'; // Importa el idioma español
@@ -13,37 +12,40 @@ moment.locale('es');
 
 const Home = ({navigation}) => {
 
+  const {logout,getSalesNoteBookHome} = useContext(loginContext)
   const [data, setData] = useState()
   const [total, setTotal] = useState()
-
-  const {logout,checkLoginStatus } = useContext(loginContext)
+  const [mounted, setMounted] = useState(false)
+  console.log(data, "data desde  home")
 
   const handleLogout = () =>  {
     try {
       logout()
       navigation.navigate("LoginScreen")
     } catch (error) {
-      console.log(error, "No se puede desloguearse")
+      console.log(error, "No se puede desloguearse") 
     }
-  }
+  }  
   
-  const getFetchData = async () => {
-    try {
-      const data = await getSalesNoteBook();
-      setData(data)
-      const salesTotal = data.reduce((total, item) => parseInt(total) + parseInt(item.total), 0);
-      setTotal(salesTotal)
-    } catch (error) {
-      console.error("Error al obtener los datos del Sales Notebook:", error);
-    }
-  };
   
-  useEffect(( ) => {
-    getFetchData()
-    checkLoginStatus()
-  },[])
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const data = await getSalesNoteBookHome();
+        setData(data);
+        const salesTotal = data.reduce((total, item) => parseInt(total) + parseInt(item.total), 0);
+        setTotal(salesTotal);
+        setMounted(true);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
   
-  const AvatarIconPicture = () => (
+    fetchData(); // Llama a la función fetchData() dentro de useEffect
+  
+  }, []);
+  
+  const AvatarIconPicture = ()  => (
     <Avatar.Image 
       size={44} 
       source={require('../assets/julian.jpg')}
