@@ -1,14 +1,18 @@
-import React, { useState,useContext } from "react";
-import { loginContext } from "../context/context";
-
+import React, { useEffect, useState, useContext } from 'react'
+import tw from 'twrnc';
 import {
-  Text,
-  View,
-  TextInput,
-  StyleSheet,
-  TouchableOpacity,
-} from "react-native";
-import axios from "axios";
+View,
+Text,
+StyleSheet,
+KeyboardAvoidingView,
+Image,
+Button
+} from 'react-native'
+import axios from 'axios';
+import { TouchableOpacity } from 'react-native-gesture-handler';
+import { Avatar} from 'react-native-paper';
+import { loginContext } from '../context/context';
+import { Icon,TextInput, } from 'react-native-paper';
 
 
 const Register = ({ navigation }) => {
@@ -26,15 +30,15 @@ const Register = ({ navigation }) => {
         name: [{ value: nameUser }],
         mail: [{ value: emailUser }],
       }
-    }
+    } 
 
     axios.request(options).then(function (response) {
       console.log(response.data);
-      navigation.navigate("Login")
+      navigation.navigate("LoginScreen")
     }).catch(function (error) {
       if (error.response) {
         // La respuesta fue hecha y el servidor respondió con un código de estado
-        // que esta fuera del rango de 2xx
+        // que esta fuera del rango de 2xx 
         console.log(error.response.data);
         console.log(error.response.status);
         console.log(error.response.headers);
@@ -52,88 +56,83 @@ const Register = ({ navigation }) => {
   }
  
   return (
-    <View style={styles.container}>
-      <View style={styles.createAccount}>
-        <Text style={styles.textNewAccount}>Ya casi terminamos</Text>
-        <Text style={(styles.textNewAccount, [styles.textStyles])}>
-          !Completa tu informacion!
-        </Text>
+    <KeyboardAvoidingView style={[styles.container]}>
+    <View style={[styles.containerWelcome]}>
+      <View>
+        <Image source={require('../assets/images/registered.png')} style={{width: 60, height: 60}}/>
       </View>
-      <View style={styles.formContainer}>
-        <TextInput
-          style={styles.input}
-          label="Correo electronico"
-          value={emailUser}
-          onChangeText={(txt)=>{setEmailUser(txt)}}
-          accessoryLeft={(props) => <IconEmail {...props} />}
-        />
-        <TextInput
-          label="Usuario"
-          value={nameUser}
-          style={styles.input}
-          onChangeText={(txt)=>{setNameUser(txt)}}
-          accessoryLeft={(props) => <IconUser {...props} />}
-        />
+      <View>
+        <Text style={{fontSize: 40, fontWeight: "600"}}>Hello,</Text>
+        <Text style={{fontSize: 20}}>Please Register</Text>
+        <Text style={{fontSize: 20}}>Your Account!</Text>
       </View>
-      <TouchableOpacity style={styles.loginButton} onPress={()=> {handleRegister()}}>
-        <Text style={styles.buttonText}>Crear Cuenta</Text>
-      </TouchableOpacity>
     </View>
+    <View>
+
+      <TextInput
+        mode='flat'
+        label="Valid Email Address"
+        onChangeText={txt => setEmailUser(txt)}
+        value={emailUser}
+        style={[styles.input]}
+      />
+
+      <TextInput
+        mode='flat'
+        label="User name"
+        onChangeText={txt => setNameUser(txt)}
+        value={nameUser}
+        style={[styles.input]}
+        
+      />
+     
+      <TouchableOpacity style={{height: 50, backgroundColor: "#2196F3", padding: 10, marginVertical: 30}} onPress={handleRegister}>
+        <Text style={[styles.loginText]}>Register</Text>
+      </TouchableOpacity>
+  
+    </View>
+  </KeyboardAvoidingView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    display: "flex",
     flex: 1,
-    justifyContent: "flex-start",
-    backgroundColor: "#f5f5f5",
-    paddingHorizontal: 15,
-    paddingVertical: 45,
-  },
-  createAccount: {
-    marginVertical: 60,
-  },
-  textNewAccount: {
-    textAlign: "center",
-    fontSize: 40,
-  },
-  textStyles: {
-    fontSize: 16,
-    textAlign: "center",
-  },
-  formContainer: {
-    width: "80%",
-    alignSelf: "center",
+    alignItems: "center",
+    justifyContent: "center",
   },
   input: {
-    borderTopWidth: 0,
-    borderLeftWidth: 0,
-    borderRightWidth: 0,
-    borderBottomWidth: 1,
-    backgroundColor: "none",
-    borderColor: "gray",
-    marginVertical: 15,
-    borderRadius: 0,
+    width: 300,
+    marginVertical: 10,
+    backgroundColor: "none"
   },
-  loginButton: {
-    backgroundColor: "#3498db",
-    padding: 15,
-    borderRadius: 5,
-    alignItems: "center",
-    marginVertical: 50,
+  button: {
+    height: 30
   },
-  buttonText: {
+  containerWelcome: {
+    alignSelf: "flex-start",
+    marginHorizontal: 34,
+    display: "flex",
+    flexDirection: "row-reverse",
+    alignItems:"center",
+    gap: 80
+  },
+  loginText: {
     color: "white",
-    fontWeight: "bold",
-    fontSize: 16,
-  },
-  login: {
+    fontSize: 20,
+    fontWeight:"500",
     textAlign: "center",
   },
-  title: {
-    textAlign: "center",
+  singup: {
+    fontSize: 20,
+    color: "#2196F3"
   },
+  containerSingUp: {
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10
+  }
 });
 
 export default Register;

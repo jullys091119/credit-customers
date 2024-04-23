@@ -12,7 +12,7 @@ const ProviderLogin = ({ children, navigation }) => {
   const  [showHome, setShowHome] = useState(false)
   const [user, setUser] = useState("")
   const [pass, setPass] = useState("")
-  const [sales, setSales] = useState([])
+  const [sales, setSales] = useState([]) 
   const [mounted, setMounted] = useState(false)
   const [nameUser, setNameUser] = useState("")
   const [uidUser, setUidUser] = useState("")
@@ -44,6 +44,7 @@ const ProviderLogin = ({ children, navigation }) => {
       url: 'https://elalfaylaomega.com/credit-customer/jsonapi/node/sales_notebook?filter[field_sales_id_user]=' + uid,
     };  
     return await axios.request(options).then(function (response) {
+      console.log(response.data,"sales")
      let totalSales = []
       response.data.data.forEach((data)=> {
        const dataSales =  {
@@ -79,7 +80,6 @@ const ProviderLogin = ({ children, navigation }) => {
     };
     try {
       const response = await axios.request(options);
-      // console.log(response.data.current_user.uid, "current user")
       await AsyncStorage.setItem("@TOKEN", response.data.csrf_token);
       await AsyncStorage.setItem("@TOKEN_LOGOUT", response.data.logout_token);
       await AsyncStorage.setItem("@UID", response.data.current_user.uid);
@@ -89,7 +89,7 @@ const ProviderLogin = ({ children, navigation }) => {
     } catch (error) {
       console.error("Login error:", error);
     }
-  };
+  }; 
 
   const logout = () => {
     const options = {
@@ -157,13 +157,13 @@ const ProviderLogin = ({ children, navigation }) => {
     return axios.request(options).then(async function (response) {
       return response.data.status; 
     }).catch(function (error) {
-      console.error(error);
+      console.error(error); 
     });
   } 
+ 
 
 
-
-  return (
+  return ( 
     <loginContext.Provider value={{ login,
      logout,
      tk,
@@ -192,3 +192,4 @@ const ProviderLogin = ({ children, navigation }) => {
 };
 
 export { ProviderLogin, loginContext };
+ 
