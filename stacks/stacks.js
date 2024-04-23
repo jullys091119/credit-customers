@@ -19,9 +19,8 @@ import Customers from '../screens/Customers';
 
 function HomeTabs() {
   const { uidUser } = useContext(loginContext);
-  console.log(uidUser)
   return (
-    <Tab.Navigator initialRouteName='HomeScreen'>
+    <Tab.Navigator >
       {/* {uidUser !== "1" &&
       } */}
       <Tab.Screen
@@ -73,7 +72,7 @@ function MyStack() {
 
   return ( 
     <NavigationContainer>
-      <Stack.Navigator >
+      <Stack.Navigator initialRouteName='HomeScreen'>
         {tk ? (
           <Stack.Screen
             name="Home"
@@ -102,6 +101,7 @@ function MyStack() {
           component={Register}
           options={{
             title: "",
+            headerShown: false,
             headerStyle: {
               backgroundColor: '#f5f5f5',
             },

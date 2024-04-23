@@ -12,17 +12,15 @@ moment.locale('es');
 
 const Home = ({navigation}) => {
 
-  const {logout,getSalesNoteBookHome,nameUser} = useContext(loginContext)
+  const {logout,getSalesNoteBookHome,nameUser, mounted} = useContext(loginContext)
   const [data, setData] = useState()
   const [total, setTotal] = useState()
   const  [showSales, setShowSales] = useState(false)
-  const currenCard = useRef(null)
  
   const handleLogout = () =>  { 
     try {
-      logout()
+      logout() 
       navigation.navigate("LoginScreen")
-    
     } catch (error) {
       console.log(error, "No se puede desloguearse") 
     }
@@ -35,18 +33,20 @@ const Home = ({navigation}) => {
         setData(data)
         const salesTotal = data.reduce((total, item) => parseInt(total) + parseInt(item.total), 0);
         setTotal(salesTotal);
+        setShowSales(true); // Establecer el estado para mostrar SalesNoteBook
       } catch (error) {
         console.error("Error fetching data:", error);
+        setShowSales(false); // Establecer el estado para ocultar SalesNoteBook en caso de error
       }
     };
     fetchData(); 
 
-    if(currenCard.current == null) {
-      setShowSales(true)
-    } else {
-      setShowSales(false)
-    }
-  }, [currenCard.current]);
+  }, [mounted]);
+
+
+  useEffect(()=> {
+   console.log(showSales, "show sales usefect")
+  },[showSales])
 
 
   const AvatarIconPicture = ()  => (
@@ -90,7 +90,7 @@ const Home = ({navigation}) => {
       <FlatList
        data={data}
         renderItem={({item,index}) => (
-          <View style={[styles.containerSales]} key={index} ref={currenCard}>
+          <View style={[styles.containerSales]} key={index}>
             <Card style={[styles.card]}>
               <View>
                 <Image style={{width: 58, height: 58}}  source={require('../assets/images/ventas.png')}/>
@@ -117,8 +117,8 @@ const Home = ({navigation}) => {
    <View style={[styles.container]}>
     <AppheaderCustom/>
     <CartSalesCustomers/>
-    <ActivityIndicator animating={showSales} color="#e6008c" size={30} style={{marginVertical: showSales? 30:0}} />
-    <SalesNoteBook/>
+    {<ActivityIndicator animating={!showSales} color="#e6008c" size={30} style={{marginVertical: !showSales? 30: null }}/> }
+    {showSales && <SalesNoteBook/>} 
    </View>
   )
 }
