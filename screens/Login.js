@@ -19,7 +19,7 @@ const Login = ({navigation}) => {
   const [showPassword, setShowPassword] = useState(false);
   const handleLogin = async () => {
     let status = await login()
-    console.log(status, "status")
+    // console.log(status, "status")
     if (status == 200) {
       navigation.navigate("HomeScreen")
     } 
@@ -37,6 +37,7 @@ const Login = ({navigation}) => {
       <Avatar.Icon size={69} style={[styles.iconGo]} color='white' icon="login"/>
     </TouchableOpacity>
   );
+
   return (
     <KeyboardAvoidingView style={[styles.container]}>
       <View style={[styles.containerWelcome]}>

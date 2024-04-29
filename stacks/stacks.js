@@ -58,21 +58,21 @@ function HomeTabs() {
             ),
           }}
         />
-      }
+      }    
 
     </Tab.Navigator>
   );
-}
+} 
 function MyStack() {
   const { tk, checkLoginStatus } = useContext(loginContext);
 
   useEffect(() => {
     checkLoginStatus();
   }, []);
-
+ 
   return ( 
     <NavigationContainer>
-      <Stack.Navigator initialRouteName='HomeScreen'>
+      <Stack.Navigator>
         {tk ? (
           <Stack.Screen
             name="Home"
@@ -86,11 +86,12 @@ function MyStack() {
             options={{ headerShown: false }}
           />
         )}
-          <Stack.Screen
+
+        <Stack.Screen
             name="HomeScreen"
             component={HomeTabs}
             options={{ headerShown: false }}
-          />
+        />
         <Stack.Screen
           name="LoginScreen"
           component={Login}

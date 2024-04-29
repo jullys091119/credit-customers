@@ -12,20 +12,10 @@ moment.locale('es');
 
 const Home = ({navigation}) => {
 
-  const {logout,getSalesNoteBookHome,nameUser, mounted} = useContext(loginContext)
+  const {getSalesNoteBookHome,nameUser, mounted, smallPerfil, loadProfileImageFromStorage} = useContext(loginContext)
   const [data, setData] = useState()
   const [total, setTotal] = useState()
   const  [showSales, setShowSales] = useState(false)
- 
-  const handleLogout = () =>  { 
-    try {
-      logout() 
-      navigation.navigate("LoginScreen")
-    } catch (error) {
-      console.log(error, "No se puede desloguearse") 
-    }
-  }  
-  
   useEffect(() => { 
     const fetchData = async () => {
       try {
@@ -38,32 +28,29 @@ const Home = ({navigation}) => {
         console.error("Error fetching data:", error);
         setShowSales(false); // Establecer el estado para ocultar SalesNoteBook en caso de error
       }
-    };
-    fetchData(); 
-
+    }; 
+    fetchData();   
   }, [mounted]);
-
+ 
 
   useEffect(()=> {
-   console.log(showSales, "show sales usefect")
-  },[showSales])
+    loadProfileImageFromStorage()
+  },[showSales, smallPerfil])
 
-
-  const AvatarIconPicture = ()  => (
+ 
+  const AvatarIconPicture = ({ picture }) => (
     <>
-    <Avatar.Image 
-      size={44} 
-      source={require('../assets/julian.jpg')}
-    />
+      <Avatar.Image 
+        size={44} 
+        source={{ uri: 'https://elalfaylaomega.com/' + picture }}
+      />
     </>
-    
   );
 
   const AppheaderCustom = () => (
     <Appbar.Header style={[styles.containerHeader]}>
-      <Appbar.Action icon="keyboard-backspace"  size={27}  color="#e6008c" onPress={() => {handleLogout()}} />
       <View  style={[styles.containerPicture]}>
-        <AvatarIconPicture/>
+        <AvatarIconPicture picture={smallPerfil} />
          <Text style={{fontSize: 19, fontWeight:"600"}}>{nameUser !== null && nameUser.charAt(0).toUpperCase() + nameUser.slice(1)}</Text>
       </View>
     </Appbar.Header>
@@ -84,10 +71,10 @@ const Home = ({navigation}) => {
         <Text style={{fontSize:20, fontWeight: "600"}}>${total}</Text>
       </View>
     </View>
-  )
+  ) 
   const SalesNoteBook = () => {
     return(
-      <FlatList
+      <FlatList 
        data={data}
         renderItem={({item,index}) => (
           <View style={[styles.containerSales]} key={index}>
@@ -132,7 +119,7 @@ const styles = StyleSheet.create({
     marginVertical: 30,
     backgroundColor: "white",
     display: "flex",
-    justifyContent: "space-between",
+    justifyContent: "flex-end",
     paddingHorizontal: 20
   },
   containerCart: {
