@@ -1,4 +1,4 @@
-import React, {useContext} from 'react'
+import React, {useContext, useEffect, useReducer} from 'react'
 import { View, Text,StyleSheet, Image } from 'react-native'
 import {Appbar,Avatar, Card, Icon} from 'react-native-paper';
 import { loginContext } from '../context/context';
@@ -11,28 +11,47 @@ import {
   StackedBarChart
 } from "react-native-chart-kit";
 import { Dimensions } from "react-native";
-const screenWidth = Dimensions.get("window").width;
+import { TouchableOpacity } from 'react-native-gesture-handler';
 
 
 
-const Perfil = () => {
-  const {nameUser} = useContext(loginContext)
+const Perfil = ({navigation}) => {
+  const {nameUser,logout, pickImagePerfil,image,getCurrentUser,loadProfileImageFromStorage} = useContext(loginContext)
+  
+  const handleLogout =  async () =>  { 
+    try {
+      await logout() 
+      navigation.navigate("LoginScreen")
+    } catch (error) {
+      console.log(error, "No se puede desloguearse") 
+    }
+  }      
+
+  useEffect(()=> {
+    getCurrentUser()
+    loadProfileImageFromStorage() 
+  },[image])
   const AppheaderCustom = () => (
     <Appbar.Header style={[styles.containerHeader]}>
-      <Appbar.Action icon="keyboard-backspace"  size={27}  color="#e6008c" onPress={() => {}} />
+      <Appbar.Action icon="keyboard-backspace"  size={27}  color="#e6008c" onPress={() => {navigation.navigate("Home")}} />
       <View  style={[styles.containerTitle]}>
         <Text style={[styles.title]}>My</Text>
         <Text style={[styles.title]}>Profile <Text>&#128515;</Text></Text>
       </View>
       <View style={[styles.containerPhotoPicture]}>
-        <Avatar.Icon size={44} color='white' backgroundColor="#EAEAEA" icon="camera-outline"/>
+        <TouchableOpacity onPress={()=>{pickImagePerfil()}}>
+          <Avatar.Icon size={44} color='white' backgroundColor="#EAEAEA" icon="camera-outline"/>
+        </TouchableOpacity>
         <View style={[styles.pictureRounded]}>
-            <Avatar.Image size={170} source={require('../assets/julian.jpg')} />
+        
+          {image!== "undefined"  && <Avatar.Image size={170} source={{uri: 'https://elalfaylaomega.com/' + image}} />}
         </View>
-        <Avatar.Icon size={44} color='white' backgroundColor="#EAEAEA" icon="camera-outline"/>
+        <TouchableOpacity  onPress={()=> {handleLogout()}} >
+          <Avatar.Icon size={44} color='white' backgroundColor="#EAEAEA" icon="logout"/>
+        </TouchableOpacity>
       </View>
       <View style={[styles.ContainerUserName]}>
-        <Text style={[styles.userName]}>{nameUser.charAt(0).toUpperCase() + nameUser.slice(1)}</Text>
+        {/* <Text style={[styles.userName]}>{nameUser.charAt(0).toUpperCase() + nameUser.slice(1)}</Text> */}
       </View>
       <View style={[styles.containerSettingsProfile]}>
         <Card style={[styles.card]} elevation={1}>
@@ -55,8 +74,6 @@ const Perfil = () => {
        <AppheaderCustom/>
       </View>
     </>
-
-
   )
 }
 const styles =  StyleSheet.create({
