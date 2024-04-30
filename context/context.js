@@ -4,6 +4,7 @@ import axios from "axios";
 import * as ImagePicker from 'expo-image-picker'
 import * as FileSystem from 'expo-file-system';
 import { decode, encode } from 'base-64';
+import { Alert } from "react-native";
 
 
 const loginContext = createContext();
@@ -33,8 +34,6 @@ const ProviderLogin = ({ children, navigation }) => {
   const [imagenStorage, setImagenStorage] = useState("")
   const [lastSales, setLastSales] = useState ("")
  
- 
-
   const getSalesNoteBook = async (id) => {
     const options = {
       method: 'GET',
@@ -43,6 +42,7 @@ const ProviderLogin = ({ children, navigation }) => {
     return await axios.request(options).then(function (response) {
      let totalSales = []
       response.data.data.forEach((data)=> {
+        console.log(data, "<<<<<<<<<<<<<<<<<<<<<<<<,")
       const dataSales =  {
         id: data.id,
         date: data.attributes.field_sales_date,
@@ -257,6 +257,19 @@ const ProviderLogin = ({ children, navigation }) => {
       console.log(error);
     }
   }
+
+  const alertErrorsSales = () => {
+    Alert.alert('Error', 'Campo vacío o sin deuda', [
+      {
+        text: 'cancel', onPress: ()=> console.log("cancel presed")
+      },
+      {
+        text: 'Ok', onPress: () => console.log("Ok pressed")
+      }
+      
+    ]
+  )
+  }
   
   
   useEffect(()=> {
@@ -277,6 +290,7 @@ const ProviderLogin = ({ children, navigation }) => {
      setShowHome,
      setUser,
      setPass,
+     alertErrorsSales,
      users,
      user,
      pass,

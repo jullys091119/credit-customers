@@ -4,7 +4,6 @@ import { Icon, Portal, Dialog, ActivityIndicator } from "react-native-paper";
 import { StyleSheet, View, Image, TouchableOpacity, TextInput } from "react-native";
 import { loginContext } from "../context/context";
 import { FlatList } from "react-native-gesture-handler";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import moment from "moment";
 import axios from "axios";
 
@@ -15,57 +14,79 @@ const ListAccessoriesShowcase = (props) => {
   const [total, setTotal] = useState("");
   const [valueSale, setValueSale] = useState("");
   const [inputVisible, setInputVisible] = useState(false);
-  const [idUserSale, setIdUserSale]= useState("")
+  const [idUserSale, setIdUserSale] = useState("")
   const [userName, setUserName] = useState("")
   const [containerVisible, setContainerVisible] = useState(false)
   const [pay, setPay] = useState("")
   const [fieldPayVisible, setFieldPayVisible] = useState(false)
   const [isSended, setIsSended] = useState(false)
-  const { users, getCurrentUser, setShowHome, getSalesNoteBook, tk } = useContext(loginContext);
+  const [isLoaded, setIsLoaded] = useState(false)
+  const [saleSuccess, setSaleSuccess] = useState(false)
+  const { users, getCurrentUser, setShowHome, getSalesNoteBook, tk, alertErrorsSales} = useContext(loginContext);
 
   const renderItemIcon = () => (
     <Icon source="account" color="#e6008c" size={30} />
   );
-  
-  const addSalesCustomer = (total) => {
-    const currentDay = moment()
-    const options = {
-      method: "POST",
-      url: "https://elalfaylaomega.com/credit-customer/jsonapi/node/sales_notebook",
-      headers: {
-        Accept: "application/vnd.api+json",
-        Authorization: "Authorization: Basic YXBpOmFwaQ==",
-        "Content-Type": "application/vnd.api+json",
-        "X-CSRF-Token": tk,
-      },
 
-      data: {
+  const  SalesPaySuccess = () => (
+    <Icon source="check-all" color="#e6008c" size={30} />
+  )
+
+  const addSalesCustomer = async(total) => {
+    const currentDay = moment()
+    if(total !== 0 &&  valueSale != ""  || total == pay) {
+      setIsLoaded(true)
+      const options = {
+        method: "POST",
+        url: "https://elalfaylaomega.com/credit-customer/jsonapi/node/sales_notebook",
+        headers: {
+          Accept: "application/vnd.api+json",
+          Authorization: "Authorization: Basic YXBpOmFwaQ==",
+          "Content-Type": "application/vnd.api+json",
+          "X-CSRF-Token": tk,
+        },
+  
         data: {
-          type: "node--sales_notebook",
-          attributes: {
-            title: `Compra de ${userName}`,
-            field_sales_date: currentDay.format(),
-            field_sales_total: !valueSale?total:valueSale,
-            field_sales_id_user: idUserSale
+          data: {
+            type: "node--sales_notebook",
+            attributes: {
+              title: `Compra de ${userName}`,
+              field_sales_date: currentDay.format(),
+              field_sales_total: !valueSale ? total : valueSale,
+              field_sales_id_user: idUserSale
+            },
           },
         },
-      },
-    };
+      };
+        axios
+          .request(options)
+          .then(async function (response) {
+            console.log(response.data);
+            setValueSale("")
+            setIsSended(true)
+            if (response.data) {
+              setIsLoaded(false)
+              setSaleSuccess(true)
+              const data = await getSalesNoteBook(idUserSale)
+              setData(data)
+              const salesTotal = data.reduce(
+                (total, item) => parseInt(total) + parseInt(item.total),
+                0
+              );
+              setTotal(salesTotal);
+              setSaleSuccess(false)
+            }
+            
+          })
+          .catch(function (error) {
+            console.error(error, "error al ejecutar el listado de ventas");
+          });
 
-    if(valueSale !== "" || total) {
-      axios
-        .request(options)
-        .then(function (response) {
-          console.log(response.data);
-          setValueSale("")
-          setIsSended(true)
-          setPay("")
-        })
-        .catch(function (error) {
-          console.error(error, "error al ejecutar el listado de ventas");
-        });
-    } else  {
+    
+    } else {
       alert("el valor que ingresaste esta vacio")
+      setTotal(0)
+      setData("")
     }
   };
   const AddSalesIcon = () => (
@@ -73,7 +94,7 @@ const ListAccessoriesShowcase = (props) => {
       onPress={() => {
         addSalesCustomer();
       }}
-      style={{marginTop: 20, marginLeft: 20}}
+      style={{ marginTop: 20, marginLeft: 20 }}
     >
       <Icon
         size={40}
@@ -89,10 +110,10 @@ const ListAccessoriesShowcase = (props) => {
         payCountUser()
       }}
     >
-    <Image
-      source={require('../assets/images/tarjeta.png')}
-      style={{width: 60, height: 60, marginVertical: 10}}
-    />
+      <Image
+        source={require('../assets/images/tarjeta.png')}
+        style={{ width: 60, height: 60, marginVertical: 10 }}
+      />
     </TouchableOpacity>
   );
 
@@ -102,31 +123,31 @@ const ListAccessoriesShowcase = (props) => {
   };
 
   const handleItemClick = async (item) => {
-     try {
-       setUserName(item.name)
-       setIdUserSale(item.id)
-       setSelectedItem(item);
-       setDialogVisible(true);
-       setInputVisible(true);
-       await currentSales(item.id)
-       const data = await getSalesNoteBook(item.id);
-       setData(data);
-       const salesTotal = data.reduce(
-         (total, item) => parseInt(total) + parseInt(item.total),
-         0
-       );
-       setTotal(salesTotal);
-       setContainerVisible(true)
-     } catch (error) {
-       setContainerVisible(false)
-     }
+    try {
+      setUserName(item.name)
+      setIdUserSale(item.id)
+      setSelectedItem(item);
+      setDialogVisible(true);
+      setInputVisible(true);
+      await currentSales(item.id)
+      const data = await getSalesNoteBook(item.id);
+      setData(data);
+      const salesTotal = data.reduce(
+        (total, item) => parseInt(total) + parseInt(item.total),
+        0
+      );
+      setTotal(salesTotal);
+      setContainerVisible(true)
+    } catch (error) {
+      setContainerVisible(false)
+    }
   };
 
   const handleDialogDismiss = () => {
     setDialogVisible(false);
     setSelectedItem(null);
   };
-  
+
   const renderItem = ({ item, index }) => (
     <ListItem
       onPress={() => handleItemClick(item)}
@@ -149,107 +170,117 @@ const ListAccessoriesShowcase = (props) => {
 
   const payCountUser = async () => {
     setFieldPayVisible(true)
-    setFieldPayVisible(false)
     let isLoaded = false
-    const idSales = data.map((item) =>  item.id )
-        for (const id in idSales) {
-         const options = {
-           method: 'DELETE',
-           url: '  https://elalfaylaomega.com/credit-customer/jsonapi/node/sales_notebook/' + idSales[id],
-           headers: {
-             'Content-Type': 'aplicación/vnd.api+json',
-             Authorization: 'Basic YXBpOmFwaQ=='
-            }
-         };
-         
-         await axios.request (options).then(function (response) {
-          if(response.status == "204") {
+    const idSales = data.map((item) => item.id)
+    if (idSales != "") {
+      setIsLoaded(true)
+      for (const id in idSales) {
+        const options = {
+          method: 'DELETE',
+          url: '  https://elalfaylaomega.com/credit-customer/jsonapi/node/sales_notebook/' + idSales[id],
+          headers: {
+            'Content-Type': 'aplicación/vnd.api+json',
+            Authorization: 'Basic YXBpOmFwaQ=='
+          }
+        };
+
+        await axios.request(options).then(function (response) {
+          if (response.status == "204") {
             isLoaded = true
+            setSaleSuccess(true)
           }
         }).catch(function (error) {
           console.error(error, "error al updatear");
         });
+
+        setSaleSuccess(false)
       }
-      const newValue = total - pay
-  
-      
-      if(isLoaded) {
-      if(newValue != null || newValue != "") {
+    } else {
+      alertErrorsSales()
+    }
+    const newValue = total - pay
+    if (isLoaded) {
+      if (newValue != null || newValue != "") {
         addSalesCustomer(newValue)
-        alert("productos borrados")
-      } 
+        setValueSale("")
+        setPay("")
+      }
+      setIsLoaded(false)
     }
   }
 
-  return ( 
+  return (
     <>
       <List
         data={users}
         renderItem={renderItem}
         ItemSeparatorComponent={Divider}
-      />
+        />
       <Portal>
         <Dialog
           visible={dialogVisible}
           onDismiss={handleDialogDismiss}
           style={{ height: 470, width: 310 }}
-        >
+          >
           <Dialog.Content style={[styles.containerDialog]}>
+            <View style={{position: "absolute", bottom: 75, right: 30, zIndex: 90, borderRadius: 100, padding: 10}}>
+              { saleSuccess && <SalesPaySuccess/>}
+            </View>
             <View style={[styles.containerSales]}>
               {selectedItem && (
                 <View style={[styles.containerUserName]}>
                   <Text style={[styles.userSelected]}>
                     <Text style={[styles.nameUser]}>{selectedItem.name.toUpperCase()}</Text>
                   </Text>
-                  <TouchableOpacity onPress={()=>openInputPay()}  >
-                    <Image style={{width: 45, height: 45}} source={require("../assets/images/payment.png")}/>
+                  <TouchableOpacity onPress={() => { openInputPay() }}>
+                    <Image style={{ width: 45, height: 45 }} source={require("../assets/images/payment.png")} />
                   </TouchableOpacity>
                 </View>
               )}
-              <View style={{display:"flex",flexDirection: "row-reverse",gap: 10, marginVertical: 10}}>
-                <Text style={{alignSelf: "flex-end", fontSize: 30, fontWeight:"700"}}>${total}</Text>
-                <Image style={[styles.image]} source={require('../assets/images/monedas.png')}/>
+              <View style={{ display: "flex", flexDirection: "row-reverse", gap: 10, marginVertical: 10 }}>
+                <Text style={{ alignSelf: "flex-end", fontSize: 30, fontWeight: "700" }}>${total}</Text>
+                <Image style={[styles.image]} source={require('../assets/images/monedas.png')} />
               </View>
               <View style={{ height: "54%", overflow: "scroll" }}>
-               {!containerVisible && <ActivityIndicator animating={true} color="red" />}
+                {!containerVisible && <ActivityIndicator animating={true} color="red" />}
                 <FlatList
                   data={data}
                   renderItem={({ item, index }) => (
                     <View style={[styles.containerTotal]}>
                       <View style={[styles.date]}>
-                        <Image style={{width: 21, height: 21}}  source={require('../assets/images/calendario.png')}/>
-                        <Text style={{marginLeft: 50, fontWeight: "800"}}>{moment(item.date).format("ll")}</Text>
+                        <Image style={{ width: 21, height: 21 }} source={require('../assets/images/calendario.png')} />
+                        <Text style={{ marginLeft: 50, fontWeight: "800" }}>{moment(item.date).format("ll")}</Text>
                       </View>
-                      <Text style={{fontWeight: "700"}}>${item.total}</Text>
+                      <Text style={{ fontWeight: "700" }}>${item.total}</Text>
                     </View>
                   )}
                 />
               </View>
             </View>
             <View>
-              { 
-                !fieldPayVisible?
-                <TextInput
-                  placeholder="Add  sales value"
-                  mode="flat"
-                  value={valueSale}
-                  onChangeText={(number) => setValueSale(number)}
-                  keyboardType="numeric"
-                  style={[styles.inputvalue]}
-                />:
-                fieldPayVisible && <TextInput
-                  placeholder="Paying count"
-                  mode="flat"
-                  value={pay}
-                  onChangeText={(number) => setPay(number)}
-                  keyboardType="numeric"
-                  style={[styles.inputvalue]}
-                />
-
+              <ActivityIndicator color="#e6008c" animating={isLoaded} style={styles.activityIndicator} />
+              {
+                !fieldPayVisible ?
+                  <TextInput
+                    placeholder="Add sales"
+                    mode="flat"
+                    value={valueSale}
+                    onChangeText={(number) => setValueSale(number)}
+                    keyboardType="numeric"
+                    style={[styles.inputvalue]}
+                    /> :
+                    fieldPayVisible && <TextInput
+                    placeholder="Paying count"
+                    mode="flat"
+                    value={pay}
+                    onChangeText={(number) => setPay(number)}
+                    keyboardType="numeric"
+                    style={[styles.inputvalue]}
+                  />
               }
             </View>
-            <View style={{width: 60,alignSelf: "flex-end"}}>
-             {!fieldPayVisible?<AddSalesIcon />:<AddPayIcon/>}
+            <View style={{ width: 60, alignSelf: "flex-end", display: "flex"}}>
+              {!fieldPayVisible ? <AddSalesIcon /> : <AddPayIcon />}
             </View>
           </Dialog.Content>
         </Dialog>
@@ -282,12 +313,12 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginVertical: 3, 
+    marginVertical: 3,
   },
   containerItemName: {
-   display: "flex",
-   flexDirection: "row",
-   justifyContent:"space-between",
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
   containerUserName: {
     display: "flex",
@@ -312,6 +343,12 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     marginTop: -20,
     paddingHorizontal: 10
+  },
+  activityIndicator: {
+    position: "absolute",
+    zIndex: 1,
+    right: 20,
+    bottom: 10,
   }
 });
 
