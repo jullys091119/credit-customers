@@ -49,6 +49,10 @@ const Home = ({navigation}) => {
 
   const AppheaderCustom = () => (
     <Appbar.Header style={[styles.containerHeader]}>
+       <View style={[styles.containerBuy]}> 
+        <Image source={require('../assets/bolsa.png')} style={{width: 30, height: 30, marginTop: 0, marginLeft: 1}} />
+        <Text style={{fontSize: 30, fontWeight: "500"}}>Mis Compras</Text>
+      </View>
       <View  style={[styles.containerPicture]}>
         <AvatarIconPicture picture={smallPerfil} />
          <Text style={{fontSize: 19, fontWeight:"600"}}>{nameUser !== null && nameUser.charAt(0).toUpperCase() + nameUser.slice(1)}</Text>
@@ -58,13 +62,6 @@ const Home = ({navigation}) => {
   
   const CartSalesCustomers = () => (
     <View style={[styles.containerCart]}>
-      <View>
-        <Text style={{fontSize: 30, fontWeight: "500"}}>My</Text>
-        <Text style={{fontSize: 30, fontWeight: "500"}}>Cart</Text>
-      </View>
-      <>
-        <Image source={require('../assets/bolsa.png')} style={{width: 50, height: 50, marginTop: 29, marginLeft: 15}} />
-      </>
       <View style={[styles.containerTotal]}>
         <Text style={{fontSize: 20, fontWeight: "600"}}>Total:</Text>
         <Image style={{width: 40, height: 40,}}  source={require('../assets/images/monedas.png')}/>
@@ -119,12 +116,11 @@ const styles = StyleSheet.create({
     marginVertical: 30,
     backgroundColor: "white",
     display: "flex",
-    justifyContent: "flex-end",
+    justifyContent: "space-between",
     paddingHorizontal: 20
   },
   containerCart: {
-    paddingHorizontal: 30,
-    marginTop: -30,
+    paddingHorizontal: 20,
     display: "flex",
     flexDirection: "row",
   },
@@ -167,7 +163,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     width: "63%",
     alignItems: "flex-end",
-    paddingLeft: 16,
     gap:10,
   },
   containerPicture: {

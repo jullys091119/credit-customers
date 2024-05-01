@@ -20,7 +20,7 @@ import Customers from '../screens/Customers';
 function HomeTabs() {
   const { uidUser } = useContext(loginContext);
   return (
-    <Tab.Navigator >
+    <Tab.Navigator initialRouteName='HomeScreen'>
       {/* {uidUser !== "1" &&
       } */}
       <Tab.Screen

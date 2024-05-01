@@ -35,8 +35,8 @@ const Perfil = ({navigation}) => {
     <Appbar.Header style={[styles.containerHeader]}>
       <Appbar.Action icon="keyboard-backspace"  size={27}  color="#e6008c" onPress={() => {navigation.navigate("Home")}} />
       <View  style={[styles.containerTitle]}>
-        <Text style={[styles.title]}>My</Text>
-        <Text style={[styles.title]}>Profile <Text>&#128515;</Text></Text>
+        <Text style={[styles.title]}>Mi</Text>
+        <Text style={[styles.title]}>Perfil <Text>&#128515;</Text></Text>
       </View>
       <View style={[styles.containerPhotoPicture]}>
         <TouchableOpacity onPress={()=>{pickImagePerfil()}}>
@@ -61,7 +61,7 @@ const Perfil = ({navigation}) => {
               color="#e6008c"
               size={20}
             />
-            <Text style={{textAlign: "center", fontSize: 18}} variant="titleLarge">My account</Text>
+            <Text style={{textAlign: "center", fontSize: 18}} variant="titleLarge">Mi Cuenta</Text>
           </Card.Content>
         </Card>
       </View>
