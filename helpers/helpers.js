@@ -34,7 +34,7 @@ const ListAccessoriesShowcase = (props) => {
 
   const addSalesCustomer = async(total) => {
     const currentDay = moment()
-    if(total !== 0 &&  valueSale != ""  || total == pay) {
+    if(total !== 0) {
       setIsLoaded(true)
       const options = {
         method: "POST",
@@ -84,7 +84,6 @@ const ListAccessoriesShowcase = (props) => {
 
     
     } else {
-      alert("el valor que ingresaste esta vacio")
       setTotal(0)
       setData("")
     }
@@ -171,8 +170,9 @@ const ListAccessoriesShowcase = (props) => {
   const payCountUser = async () => {
     setFieldPayVisible(true)
     let isLoaded = false
-    const idSales = data.map((item) => item.id)
-    if (idSales != "") {
+    let idSales;
+    if (idSales != "" && pay != "" && data.length > 0) {
+      idSales = data.map((item) => item.id)
       setIsLoaded(true)
       for (const id in idSales) {
         const options = {
@@ -200,6 +200,7 @@ const ListAccessoriesShowcase = (props) => {
     }
     const newValue = total - pay
     if (isLoaded) {
+      console.log(isLoaded)
       if (newValue != null || newValue != "") {
         addSalesCustomer(newValue)
         setValueSale("")
@@ -243,6 +244,7 @@ const ListAccessoriesShowcase = (props) => {
               </View>
               <View style={{ height: "54%", overflow: "scroll" }}>
                 {!containerVisible && <ActivityIndicator animating={true} color="red" />}
+                {total==0&&<Text style={{position: "absolute", top: 80, left: 60, color: "gray"}}>Sin saldo Pendiente</Text>}
                 <FlatList
                   data={data}
                   renderItem={({ item, index }) => (
@@ -262,7 +264,7 @@ const ListAccessoriesShowcase = (props) => {
               {
                 !fieldPayVisible ?
                   <TextInput
-                    placeholder="Add sales"
+                    placeholder="Venta"
                     mode="flat"
                     value={valueSale}
                     onChangeText={(number) => setValueSale(number)}
@@ -270,7 +272,7 @@ const ListAccessoriesShowcase = (props) => {
                     style={[styles.inputvalue]}
                     /> :
                     fieldPayVisible && <TextInput
-                    placeholder="Paying count"
+                    placeholder="Pagar/Abonar"
                     mode="flat"
                     value={pay}
                     onChangeText={(number) => setPay(number)}
