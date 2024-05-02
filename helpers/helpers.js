@@ -183,7 +183,6 @@ const ListAccessoriesShowcase = (props) => {
             Authorization: 'Basic YXBpOmFwaQ=='
           }
         };
-
         await axios.request(options).then(function (response) {
           if (response.status == "204") {
             isLoaded = true
@@ -209,7 +208,6 @@ const ListAccessoriesShowcase = (props) => {
       setIsLoaded(false)
     }
   }
-
   return (
     <>
       <List

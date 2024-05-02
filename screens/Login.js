@@ -22,6 +22,8 @@ const Login = ({navigation}) => {
     // console.log(status, "status")
     if (status == 200) {
       navigation.navigate("HomeScreen")
+      setUser("")
+      setPass("")
     } 
   };
 
