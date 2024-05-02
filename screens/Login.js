@@ -13,14 +13,19 @@ import { TouchableOpacity } from 'react-native-gesture-handler';
 import { Avatar} from 'react-native-paper';
 import { loginContext } from '../context/context';
 import { Icon,TextInput, } from 'react-native-paper';
+import {ActivityIndicator} from 'react-native-paper';
 
 const Login = ({navigation}) => {
   const { login,logout,setUser,setPass, user,pass } = useContext(loginContext);
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false)
+
   const handleLogin = async () => {
+    if(user != "" && pass != "") setIsLoaded(true)
     let status = await login()
     // console.log(status, "status")
     if (status == 200) {
+      setIsLoaded(false)
       navigation.navigate("HomeScreen")
       setUser("")
       setPass("")
@@ -70,7 +75,8 @@ const Login = ({navigation}) => {
           style={[styles.input]}
         />
         <TouchableOpacity style={{height: 50, backgroundColor: "#2196F3", padding: 10, marginVertical: 30}} onPress={handleLogin}>
-          <Text style={[styles.loginText]}>LOGIN</Text>
+          <ActivityIndicator color="white" animating={isLoaded} style={styles.activityIndicator} />
+          <Text style={[styles.loginText]}>{isLoaded?null:"LOGIN"}</Text>
         </TouchableOpacity>
         <View style={[styles.containerSingUp]}>
           <Text>Don't have accout?</Text><TouchableOpacity><Text style={[styles.singup]} onPress={openRegister}>Sing up</Text></TouchableOpacity>
@@ -116,7 +122,12 @@ const styles =  StyleSheet.create({
     display: "flex",
     flexDirection: "row",
     alignItems: "center",
-    gap: 10
+    gap: 10,
+  },
+  activityIndicator: {
+    position: "absolute",
+    left: "50%",
+    top: 10
   }
 
 })
