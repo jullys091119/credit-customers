@@ -83,7 +83,7 @@ function MyStack() {
   useEffect(() => {
     checkLoginStatus();
   }, []);
- 
+
   return ( 
     <NavigationContainer>
       <Stack.Navigator initialRouteName='Home'>

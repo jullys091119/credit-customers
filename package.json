@@ -34,7 +34,8 @@
     "typescript": "^5.3.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.20.0"
+    "@babel/core": "^7.20.0",
+    "@expo/cli": "^0.17.10"
   },
   "private": true
 }
