@@ -33,6 +33,7 @@ const ProviderLogin = ({ children, navigation }) => {
   const [smallPerfil, setSmallPerfil] = useState("")
   const [imagenStorage, setImagenStorage] = useState("")
   const [lastSales, setLastSales] = useState ("")
+  const [roles , setRoles ] = useState("")
  
   const getSalesNoteBook = async (id) => {
     const options = {
@@ -84,6 +85,8 @@ const ProviderLogin = ({ children, navigation }) => {
     const token_logout = await AsyncStorage.getItem("@TOKEN_LOGOUT");
     const uidUser = await AsyncStorage.getItem('@UID')
     const nameCurrenUser = await AsyncStorage.getItem('@NAMEUSER')
+    const rol = await AsyncStorage.getItem("@ROLES")
+    setRoles(rol)
     setTk(token);
     setUidUser(uidUser)
     setTokenLogout(token_logout);
@@ -99,10 +102,17 @@ const ProviderLogin = ({ children, navigation }) => {
     };
     try {
       const response = await axios.request(options);
+      console.log(response.data.current_user.roles)
       await AsyncStorage.setItem("@TOKEN", response.data.csrf_token);
       await AsyncStorage.setItem("@TOKEN_LOGOUT", response.data.logout_token);
       await AsyncStorage.setItem("@UID", response.data.current_user.uid);
       await AsyncStorage.setItem('@NAMEUSER',response.data.current_user.name)
+      try {
+        response.data.current_user!=undefined?await AsyncStorage.setItem("@ROLES", response.data.current_user.roles[1]):undefined
+        console.log("rol guardado")
+      } catch (error) {
+        console.log("No se gurado el rol")
+      }
       checkLoginStatus()
       return response.status;
     } catch (error) {
@@ -126,6 +136,7 @@ const ProviderLogin = ({ children, navigation }) => {
           await AsyncStorage.removeItem("@TOKEN");
           await AsyncStorage.removeItem("@TOKEN_LOGOUT");
           await AsyncStorage.removeItem("@UID");
+          await AsyncStorage.removeItem("@ROLES");
           console.log("Cleared tokens");
         } catch (error) {
           console.error("Error clearing tokens:", error);
@@ -300,7 +311,8 @@ const ProviderLogin = ({ children, navigation }) => {
      nameUser,
      uidUser,
      image,
-     smallPerfil
+     smallPerfil,
+     roles
      }}>
       {children}
     </loginContext.Provider>

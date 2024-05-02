@@ -18,48 +18,62 @@ import Customers from '../screens/Customers';
 
 
 function HomeTabs() {
-  const { uidUser } = useContext(loginContext);
+  const { uidUser, roles } = useContext(loginContext);
+  console.log(roles, "generando roles")
   return (
-    <Tab.Navigator initialRouteName='HomeScreen'>
-      {/* {uidUser !== "1" &&
-      } */}
-      <Tab.Screen
-        name="MainHome"
-        component={Home}
-        options={{
-          tabBarLabel: "Home",
-          headerShown: false,
-          tabBarIcon: ({ color, size }) => (
-            <Icon source="home-analytics" color="#e6008c" size={40} />
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="Pefil"
-        component={Perfil}
-        options={{
-          tabBarLabel: "Perfil",
-          headerShown: false,
-          tabBarIcon: ({ color, size }) => (
-            <Icon source="account-circle-outline" color="#e6008c" size={40} />
-          ),
-        }}
-      />
+    <Tab.Navigator>
       {
-        uidUser == 1  &&
-        <Tab.Screen
-          name="Credit customers"
-          component={Alphabet}
-          options={{
-            tabBarLabel: "Notebook",
-            headerShown: true,
-            tabBarIcon: ({ color, size }) => (
-              <Icon source="dots-grid" color="#e6008c" size={40} />
-            ),
-          }}
-        />
-      }    
-
+        roles == undefined?
+        <>
+          <Tab.Screen
+            name="MainHome"
+            component={Home}
+            options={{
+              tabBarLabel: "Home",
+              headerShown: false,
+              tabBarIcon: ({ color, size }) => (
+                <Icon source="home-analytics" color="#e6008c" size={40} />
+              ),
+            }}
+          />
+          <Tab.Screen
+            name="Pefil"
+            component={Perfil}
+            options={{
+              tabBarLabel: "Perfil",
+              headerShown: false,
+              tabBarIcon: ({ color, size }) => (
+                <Icon source="account-circle-outline" color="#e6008c" size={40} />
+              ),
+            }}
+          />
+        </>:
+        <>
+          <Tab.Screen
+            name="Credit customers"
+            component={Alphabet}
+            options={{
+              tabBarLabel: "Notebook",
+              headerShown: true,
+              tabBarIcon: ({ color, size }) => (
+                <Icon source="dots-grid" color="#e6008c" size={40} />
+              ),
+            }}
+          />
+          <Tab.Screen
+              name="Pefil"
+              component={Perfil}
+              options={{
+                tabBarLabel: "Perfil",
+                headerShown: false,
+                tabBarIcon: ({ color, size }) => (
+                  <Icon source="account-circle-outline" color="#e6008c" size={40} />
+                ),
+              }}
+            />
+        </>
+      }
+  
     </Tab.Navigator>
   );
 } 
@@ -72,7 +86,7 @@ function MyStack() {
  
   return ( 
     <NavigationContainer>
-      <Stack.Navigator>
+      <Stack.Navigator initialRouteName='Home'>
         {tk ? (
           <Stack.Screen
             name="Home"
