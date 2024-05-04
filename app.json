@@ -7,7 +7,7 @@
     "icon": "./assets/tienda-en-linea.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/splash.png",
+      "image": "./assets/tienda-en-linea.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -29,7 +29,7 @@
     },
     "extra": {
       "eas": {
-        "projectId": "fae86ffe-4efb-4048-b622-dcdd09f0442b"
+        "projectId": "6e84cd78-fa0d-4f9f-a08a-ef3d6eb22189"
       }
     }
   }
