@@ -52,15 +52,15 @@ const Login = ({navigation}) => {
           <Image source={require('../assets/images/tienda.png')} style={{width: 60, height: 60}}/>
         </View>
         <View>
-          <Text style={{fontSize: 40, fontWeight: "600"}}>Hello,</Text>
-          <Text style={{fontSize: 20}}>Please Login to</Text>
-          <Text style={{fontSize: 20}}>Your Account!</Text>
+          <Text style={{fontSize: 40, fontWeight: "600"}}>Hola,</Text>
+          <Text style={{fontSize: 20}}>Por favor entra</Text>
+          <Text style={{fontSize: 20}}>a tu cuenta!</Text>
         </View>
       </View>
       <View>
         <TextInput
           mode='flat'
-          label="User name"
+          label="Usuario"
           onChangeText={txt => setUser(txt)}
           value={user}
           style={[styles.input]}
@@ -68,18 +68,18 @@ const Login = ({navigation}) => {
         <TextInput
           mode='flat'
           secureTextEntry={showPassword?true:false}
-          label="password"
+          label="Clave"
           value={pass}
           onChangeText={txt => setPass(txt)}
-          right={<TextInput.Icon icon="eye" placeholder='Password' onPress={() => {setShowPassword(!showPassword)}} />}
+          right={<TextInput.Icon icon={!showPassword?"eye":"eye-off-outline"} placeholder='Password' onPress={() => {setShowPassword(!showPassword)}} />}
           style={[styles.input]}
         />
         <TouchableOpacity style={{height: 50, backgroundColor: "#2196F3", padding: 10, marginVertical: 30}} onPress={handleLogin}>
           <ActivityIndicator color="white" animating={isLoaded} style={styles.activityIndicator} />
-          <Text style={[styles.loginText]}>{isLoaded?null:"LOGIN"}</Text>
+          <Text style={[styles.loginText]}>{isLoaded?null:"Entrar"}</Text>
         </TouchableOpacity>
         <View style={[styles.containerSingUp]}>
-          <Text>Don't have accout?</Text><TouchableOpacity><Text style={[styles.singup]} onPress={openRegister}>Sing up</Text></TouchableOpacity>
+          <Text>No tienes una cuenta?</Text><TouchableOpacity><Text style={[styles.singup]} onPress={openRegister}>Registrate</Text></TouchableOpacity>
         </View>
       </View>
     </KeyboardAvoidingView>
