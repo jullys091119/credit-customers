@@ -11,9 +11,9 @@ export default function App() {
   return (
     <GestureHandlerRootView style={{flex: 1}}>
       <StatusBar style="auto" />
-      <ApplicationProvider {...eva} theme={eva.light}>
+      <ApplicationProvider>
         <ProviderLogin>
-          <PaperProvider>
+          <PaperProvider >
             <MyStack />
           </PaperProvider>
         </ProviderLogin>
