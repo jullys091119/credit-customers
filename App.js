@@ -1,5 +1,4 @@
-import React, { useEffect } from 'react';
-import { Button, View, Text } from 'react-native';
+import React, { useEffect, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet } from 'react-native';
 import { MyStack } from './stacks/stacks';
@@ -10,25 +9,24 @@ import * as eva from '@eva-design/eva';
 import { ApplicationProvider } from '@ui-kitten/components';
 import * as Updates from 'expo-updates';
 
+
 export default function App() {
-  const [updateAvailable, setUpdateAvailable] = React.useState(false);
 
   async function onFetchUpdateAsync() {
     try {
       const update = await Updates.checkForUpdateAsync();
-      console.log(update)
-
-      if (!update.isAvailable) {
-        setUpdateAvailable(true);
+      if (update.isAvailable) {
+        await Updates.fetchUpdateAsync();
+        await Updates.reloadAsync();
       }
     } catch (error) {
-      // You can also add an alert() to see the error message in case of an error when fetching updates.
-      alert(`Error fetching latest Expo update: ${error}`);
+      // You can also add an alert() here if needed for your purposes
+      console.log(`Error fetching latest Expo update: ${error}`);
     }
   }
-
+  
   useEffect(() => {
-    onFetchUpdateAsync();
+    onFetchUpdateAsync()
   }, []);
 
   return (
@@ -37,13 +35,6 @@ export default function App() {
       <ApplicationProvider {...eva} theme={eva.light}>
         <ProviderLogin>
           <PaperProvider>
-            {updateAvailable ? (
-              <View style={styles.updateMessageContainer}>
-                <Text style={styles.updateMessageText}>
-                  Hay una actualización disponible. Por favor, reinicia la aplicación para aplicarla.
-                </Text>
-              </View>
-            ) : null}
             <MyStack />
           </PaperProvider>
         </ProviderLogin>

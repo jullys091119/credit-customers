@@ -23,7 +23,6 @@ const Login = ({navigation}) => {
   const handleLogin = async () => {
     if(user != "" && pass != "") setIsLoaded(true)
     let status = await login()
-    // console.log(status, "status")
     if (status == 200) {
       setIsLoaded(false)
       navigation.navigate("HomeScreen")
