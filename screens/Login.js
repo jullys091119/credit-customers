@@ -71,7 +71,7 @@ const Login = ({navigation}) => {
           label="password"
           value={pass}
           onChangeText={txt => setPass(txt)}
-          right={<TextInput.Icon icon="eye" placeholder='Password' onPress={() => {setShowPassword(!showPassword)}} />}
+          right={<TextInput.Icon icon={!showPassword?"eye":"eye-off-outline"} placeholder='Password' onPress={() => {setShowPassword(!showPassword)}} />}
           style={[styles.input]}
         />
         <TouchableOpacity style={{height: 50, backgroundColor: "#2196F3", padding: 10, marginVertical: 30}} onPress={handleLogin}>

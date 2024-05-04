@@ -31,6 +31,20 @@
       "eas": {
         "projectId": "6e84cd78-fa0d-4f9f-a08a-ef3d6eb22189"
       }
+    },
+    "plugins": [
+      [
+        "expo-updates",
+        {
+          "username": "account-username"
+        }
+      ]
+    ],
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/6e84cd78-fa0d-4f9f-a08a-ef3d6eb22189"
     }
   }
 }
