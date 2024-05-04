@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "credit-customers",
+    "name": "Abarrotes Juliancito",
     "slug": "credit-customers",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -19,7 +19,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/tienda-en-linea.png",
         "backgroundColor": "#ffffff"
       },
       "package": "com.huerogil.creditcustomers"
@@ -44,7 +44,10 @@
       "policy": "appVersion"
     },
     "updates": {
-      "url": "https://u.expo.dev/6e84cd78-fa0d-4f9f-a08a-ef3d6eb22189"
+      "url": "https://u.expo.dev/6e84cd78-fa0d-4f9f-a08a-ef3d6eb22189",
+      "enabled": true,
+       "fallbackToCacheTimeout": 0,
+       "checkAutomatically": "ON_LOAD"
     }
   }
 }
