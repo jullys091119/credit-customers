@@ -43,7 +43,7 @@ const ProviderLogin = ({ children, navigation }) => {
     return await axios.request(options).then(function (response) {
      let totalSales = []
       response.data.data.forEach((data)=> {
-        console.log(data, "<<<<<<<<<<<<<<<<<<<<<<<<,")
+        // console.log(data, "<<<<<<<<<<<<<<<<<<<<<<<<,")
       const dataSales =  {
         id: data.id,
         date: data.attributes.field_sales_date,
@@ -116,7 +116,11 @@ const ProviderLogin = ({ children, navigation }) => {
       checkLoginStatus()
       return response.status;
     } catch (error) {
-      console.error("Login error:", error);
+      if(error.request.status==403) {
+        return error.request.status
+      } else if(error.request.status ==400) {
+        return error.request.status
+      }
     }
   }; 
 
@@ -269,8 +273,8 @@ const ProviderLogin = ({ children, navigation }) => {
     }
   }
 
-  const alertErrorsSales = () => {
-    Alert.alert('Error', 'Campo vacío o sin deuda', [
+  const alertErrorsSales = (mnsg) => {
+    Alert.alert('Error', mnsg, [
       {
         text: 'cancel', onPress: ()=> console.log("cancel presed")
       },

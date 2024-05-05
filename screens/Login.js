@@ -1,40 +1,54 @@
-import React, { useEffect, useState, useContext } from 'react'
-import tw from 'twrnc';
+import React, { useState, useContext } from 'react'
 import {
 View,
 Text,
 StyleSheet,
 KeyboardAvoidingView,
 Image,
-Button
 } from 'react-native'
-import axios from 'axios';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import { Avatar} from 'react-native-paper';
 import { loginContext } from '../context/context';
-import { Icon,TextInput, } from 'react-native-paper';
+import { TextInput, } from 'react-native-paper';
 import {ActivityIndicator} from 'react-native-paper';
 
+
 const Login = ({navigation}) => {
-  const { login,logout,setUser,setPass, user,pass } = useContext(loginContext);
+  const { login,setUser,setPass,user,pass,alertErrorsSales } = useContext(loginContext);
   const [showPassword, setShowPassword] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false)
 
   const handleLogin = async () => {
     if(user != "" && pass != "") setIsLoaded(true)
     let status = await login()
-    if (status == 200) {
-      setIsLoaded(false)
-      navigation.navigate("HomeScreen")
-      setUser("")
-      setPass("")
-    } 
+      if (status == 200) {
+        setIsLoaded(false)
+        navigation.navigate("HomeScreen")
+        setUser("")
+        setPass("")
+      } 
+      if (status == 403) {
+        alertErrorsSales("Usuario o clave invalidos")
+        setIsLoaded(false)
+        setUser("")
+        setPass("")
+      }
+
+      if(user.length > 0 && pass.length > 0 && status == 400) {
+        alertErrorsSales("Cuenta inactiva, bloqueada o nula")
+        setIsLoaded(false)
+      }
+
+      if([user,pass].includes("")) {
+        alertErrorsSales("Rellena los campos")
+      }
   };
 
   const openRegister = async () => {
     try {
       navigation.navigate("Register")
     } catch (error) {
+     console.log(error)
     }
   };
 
@@ -66,11 +80,11 @@ const Login = ({navigation}) => {
         />
         <TextInput
           mode='flat'
-          secureTextEntry={showPassword?true:false}
+          secureTextEntry={!showPassword?true:false}
           label="Clave"
           value={pass}
           onChangeText={txt => setPass(txt)}
-          right={<TextInput.Icon icon={!showPassword?"eye":"eye-off-outline"} placeholder='Password' onPress={() => {setShowPassword(!showPassword)}} />}
+          right={<TextInput.Icon icon={showPassword?"eye":"eye-off-outline"} placeholder='Password' onPress={() => {setShowPassword(!showPassword)}} />}
           style={[styles.input]}
         />
         <TouchableOpacity style={{height: 50, backgroundColor: "#2196F3", padding: 10, marginVertical: 30}} onPress={handleLogin}>
@@ -90,6 +104,7 @@ const styles =  StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
+    paddingVertical: 50
   },
   input: {
     width: 300,
