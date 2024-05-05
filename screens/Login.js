@@ -1,5 +1,4 @@
-import React, { useEffect, useState, useContext } from 'react'
-import tw from 'twrnc';
+import React, { useState, useContext } from 'react'
 import {
 View,
 Text,
@@ -21,7 +20,6 @@ const Login = ({navigation}) => {
 
   const handleLogin = async () => {
     if(user != "" && pass != "") setIsLoaded(true)
-    console.log(user.length, "longitu")
     let status = await login()
     console.log(status)
     try {
