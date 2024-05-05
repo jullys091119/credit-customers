@@ -16,8 +16,6 @@ export default function App() {
   async function onFetchUpdateAsync() {
     try {
       const update = await Updates.checkForUpdateAsync();
-      console.log(update)
-
       if (!update.isAvailable) {
         setUpdateAvailable(true);
       }

@@ -352,4 +352,4 @@ const styles = StyleSheet.create({
   }
 });
 
-export { ListAccessoriesShowcase };
+export { ListAccessoriesShowcase};
