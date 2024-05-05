@@ -6,21 +6,27 @@ Text,
 StyleSheet,
 KeyboardAvoidingView,
 Image,
-Button
+Button,
+Alert
 } from 'react-native'
 import axios from 'axios';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import { Avatar} from 'react-native-paper';
 import { loginContext } from '../context/context';
 import { Icon,TextInput, } from 'react-native-paper';
+import {ActivityIndicator} from 'react-native-paper';
 
 
 const Register = ({ navigation }) => {
   const [emailUser, setEmailUser] = useState("")
   const [nameUser, setNameUser] = useState("")
-  const {tk} = useContext(loginContext)
+  const {tk,alertErrorsSales} = useContext(loginContext)
+  const [isLoaded, setIsLoaded] = useState(false)
+  const [emailvalid, setEmailValid] = useState(false)
+  const [errorRegister, setErrorRegister] = useState("")
 
   const  handleRegister = () => {
+    setIsLoaded(true)
     const options = {
       method: 'POST',
       url: 'https://elalfaylaomega.com/credit-customer/user/register?_format=json',
@@ -31,29 +37,50 @@ const Register = ({ navigation }) => {
         mail: [{ value: emailUser }],
       }
     } 
-
     axios.request(options).then(function (response) {
-      console.log(response.data);
       navigation.navigate("LoginScreen")
+      setIsLoaded(false)
+      setNameUser("")
+      setEmailUser("")
+      setEmailValid(false)
     }).catch(function (error) {
-      if (error.response) {
-        // La respuesta fue hecha y el servidor respondió con un código de estado
-        // que esta fuera del rango de 2xx 
-        console.log(error.response.data);
-        console.log(error.response.status);
-        console.log(error.response.headers);
-      } else if (error.request) {
-        // La petición fue hecha pero no se recibió respuesta
-        // `error.request` es una instancia de XMLHttpRequest en el navegador y una instancia de
-        // http.ClientRequest en node.js
-        console.log(error.request);
-      } else {
-        // Algo paso al preparar la petición que lanzo un Error
-        console.log('Error', error.message);
-      }
-      console.log(error.config);
+      let errorRegister = error.response.data.message;
+      console.log(errorRegister)
+      if([nameUser,emailUser].includes("")) {
+        setIsLoaded(false)
+        alertErrorsSales("Debes poner un usuario o correo")
+      } else if(error.request.status == 422) {
+        setIsLoaded(false)
+        setNameUser("")
+        setEmailUser("")
+        if(errorRegister.includes("name")) {
+          errorRegister = "El usuario ya existe"
+          alertErrorsSales(errorRegister)
+        } 
+        if (errorRegister.includes(`${emailUser}`)) {
+          errorRegister = "El correo ya existe"
+          alertErrorsSales(errorRegister)
+          setEmailValid(false)
+        }
+        
+        if( errorRegister.includes("mail.0.value")) {
+          setEmailValid(true)
+        }
+        
+      } 
+      
     });
+
   }
+
+  const ValidateEmail = ({email}) => {
+    const emailRegex = /^[\w\.-]+@[a-zA-Z\d\.-]+\.[a-zA-Z]{2,}$/;
+    if (!emailRegex.test(email)) {
+      return (
+        <Text style={{color: "red"}}>Error, Introduce una dirección de correo  válido.</Text>
+      )
+    } 
+  };
  
   return (
     <KeyboardAvoidingView style={[styles.container]}>
@@ -62,24 +89,24 @@ const Register = ({ navigation }) => {
         <Image source={require('../assets/images/registered.png')} style={{width: 60, height: 60}}/>
       </View>
       <View>
-        <Text style={{fontSize: 40, fontWeight: "600"}}>Hello,</Text>
-        <Text style={{fontSize: 20}}>Please Register</Text>
-        <Text style={{fontSize: 20}}>Your Account!</Text>
+        <Text style={{fontSize: 40, fontWeight: "600"}}>Hola,</Text>
+        <Text style={{fontSize: 20}}>Por favor Registra</Text>
+        <Text style={{fontSize: 20}}>Tu Cuenta!</Text>
       </View>
     </View>
     <View>
-
       <TextInput
         mode='flat'
-        label="Valid Email Address"
+        label="Email Valido"
         onChangeText={txt => setEmailUser(txt)}
         value={emailUser}
         style={[styles.input]}
       />
+      {emailvalid?<ValidateEmail email={emailUser}/>:""}
 
       <TextInput
         mode='flat'
-        label="User name"
+        label="Nombre Usuario"
         onChangeText={txt => setNameUser(txt)}
         value={nameUser}
         style={[styles.input]}
@@ -87,7 +114,8 @@ const Register = ({ navigation }) => {
       />
      
       <TouchableOpacity style={{height: 50, backgroundColor: "#2196F3", padding: 10, marginVertical: 30}} onPress={handleRegister}>
-        <Text style={[styles.loginText]}>Register</Text>
+        <ActivityIndicator color="white" animating={isLoaded} style={styles.activityIndicator}/>
+        <Text style={[styles.loginText]}>{isLoaded?null:"Entrar"}</Text>
       </TouchableOpacity>
   
     </View>
@@ -132,6 +160,11 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 10
+  },
+  activityIndicator: {
+    position: "absolute",
+    left: "50%",
+    top: 10
   }
 });
 
