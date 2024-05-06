@@ -51,12 +51,12 @@ const AlphabetScreen = ({navigation}) => {
         data={alphabet}
         numColumns={3} // Número de columnas en el grid
         renderItem={({ item,index }) => (
-          <View style={{flex:1, backgroundColor: "white"}}>
+          <View style={{flex:1, backgroundColor: "#F5F5F5"}}>
             <TouchableOpacity  onPress={()=> {getCustomer(item, index)}}>
               <View style={styles.item}>
                 <Text>{indexAlphabet}</Text>
                 <Text style={styles.text}>{item}</Text>
-                 {selectedLetter === item && <ActivityIndicator animating={indicator} color="white" />}
+                 {selectedLetter === item && <ActivityIndicator animating={indicator} color="#e6008c" />}
               </View>
             </TouchableOpacity>
           </View>
@@ -74,17 +74,17 @@ const AlphabetScreen = ({navigation}) => {
 const styles = StyleSheet.create({
   item: {
     textAlign: "center",
-    backgroundColor: '#e6008c',
+    backgroundColor: '#FFFFFF',
     borderRadius: 10,
     margin: 2,
-    borderWidth: 3,
-    borderColor: "#FFDB58",
-    height: 100,
+    borderColor: "#e6008c",
+    height: 90,
+   
   },
   text: {
     fontSize: 24,
     fontWeight: "600",
-    color: "white",
+    color: "#e6008c",
     textAlign: "center"
     
   },

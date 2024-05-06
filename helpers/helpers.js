@@ -154,7 +154,7 @@ const ListAccessoriesShowcase = (props) => {
       title={() => (
         <>
           <View style={[styles.containerItemName]}>
-            <Text style={styles.title}>{`${item.name.toUpperCase()}`}</Text>
+            <Text style={styles.title}>{`  ${item.name.toUpperCase()}`}</Text>
             <Text style={styles.titleIndex}>{`${index + 1}`}</Text>
           </View>
         </>
