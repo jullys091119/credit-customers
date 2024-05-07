@@ -11,8 +11,6 @@ import { ApplicationProvider } from '@ui-kitten/components';
 import * as Updates from 'expo-updates';
 
 export default function App() {
-
-
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <StatusBar style="auto" />

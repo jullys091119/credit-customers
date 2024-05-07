@@ -34,7 +34,7 @@ const ListAccessoriesShowcase = (props) => {
 
   const addSalesCustomer = async(total) => {
     const currentDay = moment()
-    if(total !== 0) {
+    if(total !== 0 && Math.sign(total) != -1) {
       setIsLoaded(true)
       const options = {
         method: "POST",
@@ -65,7 +65,7 @@ const ListAccessoriesShowcase = (props) => {
             setValueSale("")
             setIsSended(true)
             if (response.data) {
-              setIsLoaded(false)
+             setIsLoaded(false)
               setSaleSuccess(true)
               const data = await getSalesNoteBook(idUserSale)
               setData(data)
@@ -168,6 +168,7 @@ const ListAccessoriesShowcase = (props) => {
   }
 
   const payCountUser = async () => {
+    const newValue = total - pay
     setFieldPayVisible(true)
     let isLoaded = false
     let idSales;
@@ -191,21 +192,18 @@ const ListAccessoriesShowcase = (props) => {
         }).catch(function (error) {
           console.error(error, "error al updatear");
         });
-
-        setSaleSuccess(false)
       }
     } else {
       alertErrorsSales()
     }
-    const newValue = total - pay
     if (isLoaded) {
-      console.log(isLoaded)
       if (newValue != null || newValue != "") {
         addSalesCustomer(newValue)
         setValueSale("")
         setPay("")
       }
       setIsLoaded(false)
+      setSaleSuccess(false)
     }
   }
   return (
