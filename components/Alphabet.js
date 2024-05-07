@@ -14,7 +14,7 @@ const AlphabetScreen = ({navigation}) => {
   const [selectedLetter, setSelectedLetter] = useState("");
   // Array con todas las letras del abecedario
   const alphabet = Array.from({ length: 26 }, (_, i) => String.fromCharCode('A'.charCodeAt(0) + i));
-  const  {getUsers, setUsers} = useContext(loginContext)
+  const  {getUsers, setUsers, alertErrorsSales} = useContext(loginContext)
 
   const getCustomer = async (letter) => {
     setSelectedLetter(letter);
@@ -25,6 +25,9 @@ const AlphabetScreen = ({navigation}) => {
     if(users.length !== 0) {
       setModalVisible(true); // Muestra el modal
       setIndicator(false);
+    } else {
+     alertErrorsSales("No hay clientes registrados para esta letra")
+     setIndicator(false)
     }
   }
   
