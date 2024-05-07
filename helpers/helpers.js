@@ -122,6 +122,7 @@ const ListAccessoriesShowcase = (props) => {
   };
 
   const handleItemClick = async (item) => {
+    console.log(item , "item")
     try {
       setUserName(item.name)
       setIdUserSale(item.id)
