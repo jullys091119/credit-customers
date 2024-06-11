@@ -102,14 +102,14 @@ const ProviderLogin = ({ children, navigation }) => {
     };
     try {
       const response = await axios.request(options);
-      console.log(response.data.current_user.roles)
+      // console.log(response.data.current_user.roles)
       await AsyncStorage.setItem("@TOKEN", response.data.csrf_token);
       await AsyncStorage.setItem("@TOKEN_LOGOUT", response.data.logout_token);
       await AsyncStorage.setItem("@UID", response.data.current_user.uid);
       await AsyncStorage.setItem('@NAMEUSER',response.data.current_user.name)
       try {
         response.data.current_user!=undefined?await AsyncStorage.setItem("@ROLES", response.data.current_user.roles[1]):undefined
-        console.log("rol guardado")
+        // console.log("rol guardado")
       } catch (error) {
         console.log("No se gurado el rol")
       }
@@ -134,7 +134,7 @@ const ProviderLogin = ({ children, navigation }) => {
     axios
       .request(options)
       .then(async (response) => {
-        console.log(response.data,"reponse")
+        
         try {
           await AsyncStorage.removeItem("@NAMEUSER");
           await AsyncStorage.removeItem("@TOKEN");
@@ -265,7 +265,6 @@ const ProviderLogin = ({ children, navigation }) => {
       // Cargar la foto de perfil desde AsyncStorage usando la  clave única (UID)
       const key = `@PROFILE_${uidUser}`;
       const picture = await AsyncStorage.getItem(key);
-      console.log(picture, "ispicture")
       setImage(picture);
       setSmallPerfil(picture)
     } catch (error) {
@@ -276,15 +275,23 @@ const ProviderLogin = ({ children, navigation }) => {
   const alertErrorsSales = (mnsg) => {
     Alert.alert('Error', mnsg, [
       {
-        text: 'cancel', onPress: ()=> console.log("cancel presed")
-      },
-      {
-        text: 'Ok', onPress: () => console.log("Ok pressed")
+        text: 'Ok', onPress: ()=> console.log("cancel presed")
       }
-      
     ]
   )
   }
+
+  const alertPay = async (mnsg) => {
+    return new Promise((resolve, reject) => {
+        Alert.alert('Selecciona modo', mnsg, [
+            {
+                text: 'Ok'
+            }
+        ]);
+    });
+  }
+
+  
   
   
   useEffect(()=> {
@@ -306,6 +313,7 @@ const ProviderLogin = ({ children, navigation }) => {
      setUser,
      setPass,
      alertErrorsSales,
+     alertPay,
      users,
      user,
      pass,

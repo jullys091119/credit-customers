@@ -5,7 +5,7 @@ import { Icon } from "react-native-paper";
 
 const Customers = () => {
   const { users } = useContext(loginContext);
-  console.log(users, "users");
+  // console.log(users, "users");
   return (
     <FlatList
       data={users}
