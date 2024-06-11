@@ -2,14 +2,6 @@ import React, {useContext, useEffect, useReducer} from 'react'
 import { View, Text,StyleSheet, Image } from 'react-native'
 import {Appbar,Avatar, Card, Icon} from 'react-native-paper';
 import { loginContext } from '../context/context';
-import {
-  LineChart,
-  BarChart,
-  PieChart,
-  ProgressChart,
-  ContributionGraph,
-  StackedBarChart
-} from "react-native-chart-kit";
 import { Dimensions } from "react-native";
 import { TouchableOpacity } from 'react-native-gesture-handler';
 

@@ -19,7 +19,7 @@ import Customers from '../screens/Customers';
 
 function HomeTabs() {
   const { uidUser, roles } = useContext(loginContext);
-  console.log(roles, "generando roles")
+  // console.log(roles, "generando roles")
   return (
     <Tab.Navigator>
       {
@@ -50,7 +50,7 @@ function HomeTabs() {
         </>:
         <>
           <Tab.Screen
-            name="Credit customers"
+            name="Creditos de clientes"
             component={Alphabet}
             options={{
               tabBarLabel: "Notebook",

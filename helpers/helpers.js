@@ -22,7 +22,8 @@ const ListAccessoriesShowcase = (props) => {
   const [isSended, setIsSended] = useState(false)
   const [isLoaded, setIsLoaded] = useState(false)
   const [saleSuccess, setSaleSuccess] = useState(false)
-  const { users, getCurrentUser, setShowHome, getSalesNoteBook, tk, alertErrorsSales} = useContext(loginContext);
+  const  [selectionMode, setSelectionMode] = useState("")
+  const { users, getCurrentUser, setShowHome, getSalesNoteBook, tk, alertErrorsSales, alertPay} = useContext(loginContext);
 
   const renderItemIcon = () => (
     <Icon source="account" color="#e6008c" size={30} />
@@ -61,7 +62,6 @@ const ListAccessoriesShowcase = (props) => {
         axios
           .request(options)
           .then(async function (response) {
-            console.log(response.data);
             setValueSale("")
             setIsSended(true)
             if (response.data) {
@@ -122,7 +122,6 @@ const ListAccessoriesShowcase = (props) => {
   };
 
   const handleItemClick = async (item) => {
-    console.log(item , "item")
     try {
       setUserName(item.name)
       setIdUserSale(item.id)
@@ -164,49 +163,57 @@ const ListAccessoriesShowcase = (props) => {
     />
   );
 
-  const openInputPay = () => {
-    setFieldPayVisible(!fieldPayVisible)
+  const openInputPay = async () => {
+    setFieldPayVisible(!fieldPayVisible); // Cambia la visibilidad del campo de pago
+    let message = fieldPayVisible ? "¿Desea cambiarse al modo agregar ventas?" : "¿Desea abonar o liquidar una cuenta?";
+    const selection = await alertPay(message); // Espera la respuesta del usuario
+    setSelectionMode(selection); // Establece el modo de selección basado en la respuesta
   }
 
+   
   const payCountUser = async () => {
-    const newValue = total - pay
-    setFieldPayVisible(true)
-    let isLoaded = false
-    let idSales;
-    if (idSales != "" && pay != "" && data.length > 0) {
-      idSales = data.map((item) => item.id)
-      setIsLoaded(true)
-      for (const id in idSales) {
-        const options = {
-          method: 'DELETE',
-          url: '  https://elalfaylaomega.com/credit-customer/jsonapi/node/sales_notebook/' + idSales[id],
-          headers: {
-            'Content-Type': 'aplicación/vnd.api+json',
-            Authorization: 'Basic YXBpOmFwaQ=='
-          }
-        };
-        await axios.request(options).then(function (response) {
-          if (response.status == "204") {
-            isLoaded = true
-            setSaleSuccess(true)
-          }
-        }).catch(function (error) {
-          console.error(error, "error al updatear");
-        });
-      }
-    } else {
-      alertErrorsSales()
+ 
+    setFieldPayVisible(true);
+    let idSales = data.map((item) => item.id); // Asumo que necesitas esto independientemente de otros factores.
+    let isLoaded = false;
+    if (idSales.length > 0 && pay !== "" && !isNaN(pay)) { // Verificamos si hay ventas y si se proporciona un valor de pago válido.
+        setIsLoaded(true);
+        for (const id of idSales) {
+            try {
+                const response = await axios.delete(`https://elalfaylaomega.com/credit-customer/jsonapi/node/sales_notebook/${id}`, {
+                    headers: {
+                        'Content-Type': 'application/vnd.api+json',
+                        Authorization: 'Basic YXBpOmFwaQ=='
+                    }
+                });
+
+                if (response.status === 204) {
+                    isLoaded = true;
+                    setSaleSuccess(true);
+                }
+            } catch (error) {
+                console.error(error, "error al actualizar");
+            }
+        }
+
+        // Si todas las ventas se eliminaron correctamente, calculamos el nuevo valor de la venta y hacemos el registro de la venta.
+        if (isLoaded) {
+            const newValue = total - parseFloat(pay); // Restamos el pago al total.
+            if (!isNaN(newValue) && newValue !== total && newValue !== pay ) { // Verificamos si el nuevo valor es válido y diferente al total original.
+                addSalesCustomer(newValue);
+                setValueSale("");
+                setPay("");
+            } else {
+                console.error("Error en el cálculo del nuevo valor de la venta.");
+            }
+        }
+    } else { 
+      alertErrorsSales("No puedes dejar el campo vacío o cuenta sin adeudo"); // Alerta si hay problemas con los datos de la venta.
     }
-    if (isLoaded) {
-      if (newValue != null || newValue != "") {
-        addSalesCustomer(newValue)
-        setValueSale("")
-        setPay("")
-      }
-      setIsLoaded(false)
-      setSaleSuccess(false)
-    }
-  }
+
+    setIsLoaded(false);
+    setSaleSuccess(false);
+};
   return (
     <>
       <List
@@ -259,7 +266,7 @@ const ListAccessoriesShowcase = (props) => {
             <View>
               <ActivityIndicator color="#e6008c" animating={isLoaded} style={styles.activityIndicator} />
               {
-                !fieldPayVisible ?
+                !fieldPayVisible  ?
                   <TextInput
                     placeholder="Venta"
                     mode="flat"
@@ -279,7 +286,8 @@ const ListAccessoriesShowcase = (props) => {
               }
             </View>
             <View style={{ width: 60, alignSelf: "flex-end", display: "flex"}}>
-              {!fieldPayVisible ? <AddSalesIcon /> : <AddPayIcon />}
+              
+              {!fieldPayVisible ?<AddSalesIcon />:<AddPayIcon/>}
             </View>
           </Dialog.Content>
         </Dialog>

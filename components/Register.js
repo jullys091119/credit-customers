@@ -45,7 +45,7 @@ const Register = ({ navigation }) => {
       setEmailValid(false)
     }).catch(function (error) {
       let errorRegister = error.response.data.message;
-      console.log(errorRegister)
+      // console.log(errorRegister)
       if([nameUser,emailUser].includes("")) {
         setIsLoaded(false)
         alertErrorsSales("Debes poner un usuario o correo")
