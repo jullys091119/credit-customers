@@ -102,6 +102,7 @@ const ProviderLogin = ({ children, navigation }) => {
     };
     try {
       const response = await axios.request(options);
+      console.log(response.data, "response")
       // console.log(response.data.current_user.roles)
       await AsyncStorage.setItem("@TOKEN", response.data.csrf_token);
       await AsyncStorage.setItem("@TOKEN_LOGOUT", response.data.logout_token);
@@ -160,12 +161,15 @@ const ProviderLogin = ({ children, navigation }) => {
     return axios
     .request(options)
     .then(async function(response) {
+    
       const allUsers = [];
       response.data.data.forEach(users => {
+        console.log(users.attributes, "usert")
         if(users.attributes.name !== undefined) {
           const user =  {
             name: users.attributes.name,
-            id: users.attributes.drupal_internal__uid
+            id: users.attributes.drupal_internal__uid,
+            lastName: users.attributes.field_user_lastname
           }
           allUsers.push(user)
         }

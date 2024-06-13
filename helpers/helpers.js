@@ -1,13 +1,14 @@
 import { React, useContext, useEffect, useState } from "react";
 import { Button, List, ListItem, Divider, Text } from "@ui-kitten/components";
-import { Icon, Portal, Dialog, ActivityIndicator } from "react-native-paper";
+import { Icon, Portal, Dialog, ActivityIndicator, Avatar } from "react-native-paper";
 import { StyleSheet, View, Image, TouchableOpacity, TextInput } from "react-native";
 import { loginContext } from "../context/context";
 import { FlatList } from "react-native-gesture-handler";
 import moment from "moment";
 import axios from "axios";
 
-const ListAccessoriesShowcase = (props) => {
+
+const ListAccessoriesShowcase = () => {
   const [dialogVisible, setDialogVisible] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [data, setData] = useState({});
@@ -24,16 +25,11 @@ const ListAccessoriesShowcase = (props) => {
   const [saleSuccess, setSaleSuccess] = useState(false)
   const  [selectionMode, setSelectionMode] = useState("")
   const { users, getCurrentUser, setShowHome, getSalesNoteBook, tk, alertErrorsSales, alertPay} = useContext(loginContext);
-
-  const renderItemIcon = () => (
-    <Icon source="account" color="#e6008c" size={30} />
-  );
-
   const  SalesPaySuccess = () => (
     <Icon source="check-all" color="#e6008c" size={30} />
   )
 
-  const addSalesCustomer = async(total) => {
+  const addSalesCustomer = async(total) => { 
     const currentDay = moment()
     if(total !== 0 && Math.sign(total) != -1) {
       setIsLoaded(true)
@@ -46,14 +42,13 @@ const ListAccessoriesShowcase = (props) => {
           "Content-Type": "application/vnd.api+json",
           "X-CSRF-Token": tk,
         },
-  
         data: {
           data: {
             type: "node--sales_notebook",
             attributes: {
               title: `Compra de ${userName}`,
               field_sales_date: currentDay.format(),
-              field_sales_total: !valueSale ? total : valueSale,
+              field_sales_total: total ? total : valueSale,
               field_sales_id_user: idUserSale
             },
           },
@@ -73,6 +68,7 @@ const ListAccessoriesShowcase = (props) => {
                 (total, item) => parseInt(total) + parseInt(item.total),
                 0
               );
+             
               setTotal(salesTotal);
               setSaleSuccess(false)
             }
@@ -116,7 +112,6 @@ const ListAccessoriesShowcase = (props) => {
     </TouchableOpacity>
   );
 
-
   const currentSales = async () => {
     await getCurrentUser();
   };
@@ -147,21 +142,27 @@ const ListAccessoriesShowcase = (props) => {
     setSelectedItem(null);
   };
 
-  const renderItem = ({ item, index }) => (
-    <ListItem
-      onPress={() => handleItemClick(item)}
-      style={[styles.container]}
-      title={() => (
-        <>
-          <View style={[styles.containerItemName]}>
-            <Text style={styles.title}>{`  ${item.name.toUpperCase()}`}</Text>
-            <Text style={styles.titleIndex}>{`${index + 1}`}</Text>
-          </View>
-        </>
-      )}
-      accessoryLeft={renderItemIcon}
-    />
-  );
+  useEffect(()=> {
+   !dialogVisible?setFieldPayVisible(true):setFieldPayVisible(false)
+  },[dialogVisible])
+
+  const renderItem = ({ item, index }) => {
+    return (
+      <ListItem
+        onPress={() => handleItemClick(item)}
+        style={[styles.container]}
+        title={() => (
+          <>
+            <View style={[styles.containerItemName]}>
+            <Avatar.Text label={item.name.charAt(0).toUpperCase()}  size={45} />
+              <Text style={styles.title}>{`  ${item.name.toUpperCase()} ${item.lastName.toUpperCase()}`}</Text>
+            </View>
+          </>
+        )}
+      
+      />
+    )
+    };
 
   const openInputPay = async () => {
     setFieldPayVisible(!fieldPayVisible); // Cambia la visibilidad del campo de pago
@@ -170,9 +171,7 @@ const ListAccessoriesShowcase = (props) => {
     setSelectionMode(selection); // Establece el modo de selección basado en la respuesta
   }
 
-   
   const payCountUser = async () => {
- 
     setFieldPayVisible(true);
     let idSales = data.map((item) => item.id); // Asumo que necesitas esto independientemente de otros factores.
     let isLoaded = false;
@@ -195,14 +194,13 @@ const ListAccessoriesShowcase = (props) => {
                 console.error(error, "error al actualizar");
             }
         }
-
         // Si todas las ventas se eliminaron correctamente, calculamos el nuevo valor de la venta y hacemos el registro de la venta.
         if (isLoaded) {
-            const newValue = total - parseFloat(pay); // Restamos el pago al total.
-            if (!isNaN(newValue) && newValue !== total && newValue !== pay ) { // Verificamos si el nuevo valor es válido y diferente al total original.
-                addSalesCustomer(newValue);
-                setValueSale("");
-                setPay("");
+          const newValue = total - parseFloat(pay); // Restamos el pago al total.
+          if (!isNaN(newValue) && newValue !== total && newValue !== pay ) { // Verificamos si el nuevo valor es válido y diferente al total original.
+              addSalesCustomer(newValue);
+              setValueSale("");
+              setPay("");
             } else {
                 console.error("Error en el cálculo del nuevo valor de la venta.");
             }
@@ -228,22 +226,28 @@ const ListAccessoriesShowcase = (props) => {
           style={{ height: 470, width: 310 }}
           >
           <Dialog.Content style={[styles.containerDialog]}>
-            <View style={{position: "absolute", bottom: 75, right: 30, zIndex: 90, borderRadius: 100, padding: 10}}>
+            <View style={{position: "absolute", bottom: 93, right: 30, zIndex: 90, borderRadius: 100, padding: 10}}>
               { saleSuccess && <SalesPaySuccess/>}
             </View>
+        
             <View style={[styles.containerSales]}>
               {selectedItem && (
-                <View style={[styles.containerUserName]}>
-                  <Text style={[styles.userSelected]}>
-                    <Text style={[styles.nameUser]}>{selectedItem.name.toUpperCase()}</Text>
-                  </Text>
-                  <TouchableOpacity onPress={() => { openInputPay() }}>
-                    <Image style={{ width: 45, height: 45 }} source={require("../assets/images/payment.png")} />
-                  </TouchableOpacity>
-                </View>
+                 <>
+                  <View style={[styles.containerUserName]}>
+                  <Avatar.Text size={24} label={selectedItem.name.charAt(0).toUpperCase()} />
+                    <Text style={[styles.userSelected]}>
+                      <Text style={[styles.nameUser]}>{selectedItem.name.toUpperCase()}</Text>
+                    </Text>
+                    <TouchableOpacity onPress={() => { openInputPay() }}>
+                      <Image style={{ width: 45, height: 45 }} source={require("../assets/images/payment.png")} />
+                    </TouchableOpacity>
+                  </View>
+                  <Divider/>
+                 </>
+                
               )}
               <View style={{ display: "flex", flexDirection: "row-reverse", gap: 10, marginVertical: 10 }}>
-                <Text style={{ alignSelf: "flex-end", fontSize: 30, fontWeight: "700" }}>${total}</Text>
+                <Text style={{ alignSelf: "flex-end", fontSize: 20, fontWeight: "700" }}>${total}.00</Text>
                 <Image style={[styles.image]} source={require('../assets/images/monedas.png')} />
               </View>
               <View style={{ height: "54%", overflow: "scroll" }}>
@@ -252,13 +256,16 @@ const ListAccessoriesShowcase = (props) => {
                 <FlatList
                   data={data}
                   renderItem={({ item, index }) => (
+                    <>
                     <View style={[styles.containerTotal]}>
                       <View style={[styles.date]}>
                         <Image style={{ width: 21, height: 21 }} source={require('../assets/images/calendario.png')} />
-                        <Text style={{ marginLeft: 50, fontWeight: "800" }}>{moment(item.date).format("ll")}</Text>
+                        <Text style={{ marginLeft: 20, fontWeight: "800" }}>{moment(item.date).format("ll")}</Text>
                       </View>
-                      <Text style={{ fontWeight: "700" }}>${item.total}</Text>
+                      <Text style={{ fontWeight: "700" }}>${item.total}.00</Text>
                     </View>
+                    <Divider/>
+                    </>
                   )}
                 />
               </View>
@@ -268,6 +275,7 @@ const ListAccessoriesShowcase = (props) => {
               {
                 !fieldPayVisible  ?
                   <TextInput
+                   
                     placeholder="Venta"
                     mode="flat"
                     value={valueSale}
@@ -282,11 +290,11 @@ const ListAccessoriesShowcase = (props) => {
                     onChangeText={(number) => setPay(number)}
                     keyboardType="numeric"
                     style={[styles.inputvalue]}
+                 
                   />
               }
             </View>
             <View style={{ width: 60, alignSelf: "flex-end", display: "flex"}}>
-              
               {!fieldPayVisible ?<AddSalesIcon />:<AddPayIcon/>}
             </View>
           </Dialog.Content>
@@ -325,7 +333,7 @@ const styles = StyleSheet.create({
   containerItemName: {
     display: "flex",
     flexDirection: "row",
-    justifyContent: "space-between",
+    gap: 10
   },
   containerUserName: {
     display: "flex",
@@ -341,8 +349,8 @@ const styles = StyleSheet.create({
     fontWeight: "800"
   },
   image: {
-    width: 50,
-    height: 50
+    width: 30,
+    height: 30
   },
   inputvalue: {
     height: 45,
@@ -356,6 +364,11 @@ const styles = StyleSheet.create({
     zIndex: 1,
     right: 20,
     bottom: 10,
+  },
+  Snackbar: {
+    flex: 1,
+    justifyContent: 'space-between',
+
   }
 });
 
