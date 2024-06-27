@@ -275,7 +275,6 @@ const ListAccessoriesShowcase = () => {
               {
                 !fieldPayVisible  ?
                   <TextInput
-                   
                     placeholder="Venta"
                     mode="flat"
                     value={valueSale}
@@ -369,7 +368,13 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'space-between',
 
-  }
+  },
+  fab: {
+    position: 'absolute',
+    margin: 16,
+    right: 0,
+    bottom: 0,
+  },
 });
 
 export { ListAccessoriesShowcase};
