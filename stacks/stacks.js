@@ -15,6 +15,7 @@ import Perfil from '../screens/Perfil';
 import Alphabet from '../components/Alphabet';
 import Register from '../components/Register';
 import Customers from '../screens/Customers';
+import Reminders from '../components/Reminders';
 
 
 function HomeTabs() {
@@ -68,6 +69,18 @@ function HomeTabs() {
                 headerShown: false,
                 tabBarIcon: ({ color, size }) => (
                   <Icon source="account-circle-outline" color="#e6008c" size={40} />
+                ),
+              }}
+            />
+
+            <Tab.Screen
+              name="Reminders"
+              component={Reminders}
+              options={{
+                tabBarLabel: "Reminders",
+                headerShown: false,
+                tabBarIcon: ({ color, size }) => (
+                  <Icon source="message-text-clock-outline" color="#e6008c" size={37} />
                 ),
               }}
             />
