@@ -11,7 +11,6 @@ Alert
 } from 'react-native'
 import axios from 'axios';
 import { TouchableOpacity } from 'react-native-gesture-handler';
-import { Avatar} from 'react-native-paper';
 import { loginContext } from '../context/context';
 import { Icon,TextInput, } from 'react-native-paper';
 import {ActivityIndicator} from 'react-native-paper';

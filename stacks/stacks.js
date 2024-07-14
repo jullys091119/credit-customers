@@ -16,6 +16,7 @@ import Alphabet from '../components/Alphabet';
 import Register from '../components/Register';
 import Customers from '../screens/Customers';
 import Reminders from '../components/Reminders';
+import payUser from '../components/PayUser';
 
 
 function HomeTabs() {
@@ -24,55 +25,43 @@ function HomeTabs() {
   return (
     <Tab.Navigator>
       {
-        roles == undefined?
-        <>
-          <Tab.Screen
-            name="MainHome"
-            component={Home}
-            options={{
-              tabBarLabel: "Home",
-              headerShown: false,
-              tabBarIcon: ({ color, size }) => (
-                <Icon source="home-analytics" color="#e6008c" size={40} />
-              ),
-            }}
-          />
-          <Tab.Screen
-            name="Pefil"
-            component={Perfil}
-            options={{
-              tabBarLabel: "Perfil",
-              headerShown: false,
-              tabBarIcon: ({ color, size }) => (
-                <Icon source="account-circle-outline" color="#e6008c" size={40} />
-              ),
-            }}
-          />
-        </>:
-        <>
-          <Tab.Screen
-            name="Creditos de clientes"
-            component={Alphabet}
-            options={{
-              tabBarLabel: "Notebook",
-              headerShown: true,
-              tabBarIcon: ({ color, size }) => (
-                <Icon source="dots-grid" color="#e6008c" size={40} />
-              ),
-            }}
-          />
-          <Tab.Screen
+        roles == undefined ?
+          <>
+            <Tab.Screen
+              name="MainHome"
+              component={Home}
+              options={{
+                tabBarLabel: "Home",
+                headerShown: false,
+                tabBarIcon: ({ color, size }) => (
+                  <Icon source="home-analytics" color="#3366FF" size={40} />
+                ),
+              }}
+            />
+            <Tab.Screen
               name="Pefil"
               component={Perfil}
               options={{
                 tabBarLabel: "Perfil",
                 headerShown: false,
                 tabBarIcon: ({ color, size }) => (
-                  <Icon source="account-circle-outline" color="#e6008c" size={40} />
+                  <Icon source="account-circle-outline" color="#0093CE" size={40} />
                 ),
               }}
             />
-
+          </> :
+          <>
+            <Tab.Screen
+              name="Creditos de clientes"
+              component={Alphabet}
+              options={{
+                tabBarLabel: "Notebook",
+                headerShown: false,
+                tabBarIcon: ({ color, size }) => (
+                  <Icon source="dots-grid" color="#0093CE" size={40} />
+                ),
+              }}
+            />
             <Tab.Screen
               name="Reminders"
               component={Reminders}
@@ -80,16 +69,28 @@ function HomeTabs() {
                 tabBarLabel: "Reminders",
                 headerShown: false,
                 tabBarIcon: ({ color, size }) => (
-                  <Icon source="message-text-clock-outline" color="#e6008c" size={37} />
+                  <Icon source="message-text-clock-outline" color="#0093CE" size={37} />
+                ),
+              }}
+
+            />
+            <Tab.Screen
+              name="Pefil"
+              component={Perfil}
+              options={{
+                tabBarLabel: "Perfil",
+                headerShown: false,
+                tabBarIcon: ({ color, size }) => (
+                  <Icon source="account-circle-outline" color="#0093CE" size={40} />
                 ),
               }}
             />
-        </>
+          </>
       }
-  
+
     </Tab.Navigator>
   );
-} 
+}
 function MyStack() {
   const { tk, checkLoginStatus } = useContext(loginContext);
 
@@ -97,7 +98,7 @@ function MyStack() {
     checkLoginStatus();
   }, []);
 
-  return ( 
+  return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName='Home'>
         {tk ? (
@@ -115,9 +116,20 @@ function MyStack() {
         )}
 
         <Stack.Screen
-            name="HomeScreen"
-            component={HomeTabs}
-            options={{ headerShown: false }}
+          name="PayUser"
+          component={payUser}
+          options={{
+            title: "",
+            headerStyle: {
+              backgroundColor: '#f5f5f5',
+            },
+          }}
+        />
+
+        <Stack.Screen
+          name="HomeScreen"
+          component={HomeTabs}
+          options={{ headerShown: false }}
         />
         <Stack.Screen
           name="LoginScreen"
@@ -145,6 +157,7 @@ function MyStack() {
             },
           }}
         />
+        
       </Stack.Navigator>
     </NavigationContainer>
   );
@@ -153,4 +166,4 @@ function MyStack() {
 
 
 
-export  {MyStack}  
+export { MyStack }  
