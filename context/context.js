@@ -5,8 +5,7 @@ import * as ImagePicker from 'expo-image-picker'
 import * as FileSystem from 'expo-file-system';
 import { decode, encode } from 'base-64';
 import { Alert } from "react-native";
-
-
+import moment from "moment";
 const loginContext = createContext();
 
 // Configura el módulo base-64
@@ -34,6 +33,14 @@ const ProviderLogin = ({ children, navigation }) => {
   const [imagenStorage, setImagenStorage] = useState("")
   const [lastSales, setLastSales] = useState ("")
   const [roles , setRoles ] = useState("")
+  const [isDialogVisible, setIsDialogVisible] = useState(false)
+  const [modalVisible, setModalVisible] = useState(false)
+  const [userName, setUserName] = useState("")
+  const [total, setTotal] = useState("");
+  const [idUserSale, setIdUserSale] = useState("")
+  const [isLoaded, setIsLoaded] = useState(false)
+  const [valueSale, setValueSale] = useState("");
+  const [pay, setPay] = useState("")
  
   const getSalesNoteBook = async (id) => {
     const options = {
@@ -56,6 +63,7 @@ const ProviderLogin = ({ children, navigation }) => {
       console.error(error);
     });
   } 
+
 
   const getSalesNoteBookHome = async () => {
     const uid = await AsyncStorage.getItem("@UID");
@@ -102,7 +110,7 @@ const ProviderLogin = ({ children, navigation }) => {
     };
     try {
       const response = await axios.request(options);
-      console.log(response.data, "response")
+
       // console.log(response.data.current_user.roles)
       await AsyncStorage.setItem("@TOKEN", response.data.csrf_token);
       await AsyncStorage.setItem("@TOKEN_LOGOUT", response.data.logout_token);
@@ -121,9 +129,9 @@ const ProviderLogin = ({ children, navigation }) => {
         return error.request.status
       } else if(error.request.status ==400) {
         return error.request.status
-      }
     }
   }; 
+  }
 
   const logout = () => {
     const options = {
@@ -164,7 +172,7 @@ const ProviderLogin = ({ children, navigation }) => {
     
       const allUsers = [];
       response.data.data.forEach(users => {
-        console.log(users.attributes, "usert")
+        // console.log(users.attributes, "usert")
         if(users.attributes.name !== undefined) {
           const user =  {
             name: users.attributes.name,
@@ -295,10 +303,10 @@ const ProviderLogin = ({ children, navigation }) => {
     });
   }
 
-  
-  
+
   
   useEffect(()=> {
+  
   },[image])
   return ( 
     <loginContext.Provider value={{ login,
@@ -314,9 +322,18 @@ const ProviderLogin = ({ children, navigation }) => {
      setUsers,
      setMounted,
      setShowHome,
+     setIsDialogVisible,
+     alertErrorsSales,
+     setTotal,
+     setModalVisible,
+     setUserName,
+     setIdUserSale,
      setUser,
      setPass,
-     alertErrorsSales,
+     setPay,
+     setValueSale,
+     isDialogVisible,
+     pay,
      alertPay,
      users,
      user,
@@ -328,7 +345,12 @@ const ProviderLogin = ({ children, navigation }) => {
      uidUser,
      image,
      smallPerfil,
-     roles
+     roles,
+     modalVisible,
+     userName,
+     idUserSale,
+     total,
+     valueSale
      }}>
       {children}
     </loginContext.Provider>

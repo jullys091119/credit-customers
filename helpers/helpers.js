@@ -3,12 +3,13 @@ import { Button, List, ListItem, Divider, Text } from "@ui-kitten/components";
 import { Icon, Portal, Dialog, ActivityIndicator, Avatar } from "react-native-paper";
 import { StyleSheet, View, Image, TouchableOpacity, TextInput } from "react-native";
 import { loginContext } from "../context/context";
-import { FlatList } from "react-native-gesture-handler";
+import { FlatList, TouchableWithoutFeedback } from "react-native-gesture-handler";
+import { useNavigation } from "@react-navigation/native";
 import moment from "moment";
 import axios from "axios";
 
 
-const ListAccessoriesShowcase = () => {
+const ListAccessoriesShowcase = ({ navigation }) => {
   const [dialogVisible, setDialogVisible] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [data, setData] = useState({});
@@ -24,10 +25,13 @@ const ListAccessoriesShowcase = () => {
   const [isLoaded, setIsLoaded] = useState(false)
   const [saleSuccess, setSaleSuccess] = useState(false)
   const  [selectionMode, setSelectionMode] = useState("")
+  const [modalVisible, setModalVisible] = useState(false)
   const { users, getCurrentUser, setShowHome, getSalesNoteBook, tk, alertErrorsSales, alertPay} = useContext(loginContext);
-  const  SalesPaySuccess = () => (
-    <Icon source="check-all" color="#e6008c" size={30} />
-  )
+  
+  const currentSales = async () => {
+    await getCurrentUser();
+  };
+  
 
   const addSalesCustomer = async(total) => { 
     const currentDay = moment()
@@ -84,92 +88,34 @@ const ListAccessoriesShowcase = () => {
       setData("")
     }
   };
-  const AddSalesIcon = () => (
-    <TouchableOpacity
-      onPress={() => {
-        addSalesCustomer();
-      }}
-      style={{ marginTop: 20, marginLeft: 20 }}
-    >
-      <Icon
-        size={40}
-        color="#e6008c"
-        source="send"
-      />
-    </TouchableOpacity>
-  );
-
-  const AddPayIcon = () => (
-    <TouchableOpacity
-      onPress={() => {
-        payCountUser()
-      }}
-    >
-      <Image
-        source={require('../assets/images/tarjeta.png')}
-        style={{ width: 60, height: 60, marginVertical: 10 }}
-      />
-    </TouchableOpacity>
-  );
-
-  const currentSales = async () => {
-    await getCurrentUser();
-  };
-
-  const handleItemClick = async (item) => {
-    try {
-      setUserName(item.name)
-      setIdUserSale(item.id)
-      setSelectedItem(item);
-      setDialogVisible(true);
-      setInputVisible(true);
-      await currentSales(item.id)
-      const data = await getSalesNoteBook(item.id);
-      setData(data);
-      const salesTotal = data.reduce(
-        (total, item) => parseInt(total) + parseInt(item.total),
-        0
-      );
-      setTotal(salesTotal);
-      setContainerVisible(true)
-    } catch (error) {
-      setContainerVisible(false)
-    }
-  };
+ 
+ //Cuando clikeo la letra
+ const handleItemClick = async (item) => {
+  try {
+    setUserName(item.name)
+    setIdUserSale(item.id)
+    setSelectedItem(item);
+    setDialogVisible(true);
+    setInputVisible(true);
+    await currentSales(item.id)
+    const data = await getSalesNoteBook(item.id);
+    setData(data);
+    const salesTotal = data.reduce(
+      (total, item) => parseInt(total) + parseInt(item.total),
+      0
+    );
+    setTotal(salesTotal);
+    setContainerVisible(true)
+  } catch (error) {
+    setContainerVisible(false)
+  }
+};
 
   const handleDialogDismiss = () => {
     setDialogVisible(false);
     setSelectedItem(null);
   };
 
-  useEffect(()=> {
-   !dialogVisible?setFieldPayVisible(true):setFieldPayVisible(false)
-  },[dialogVisible])
-
-  const renderItem = ({ item, index }) => {
-    return (
-      <ListItem
-        onPress={() => handleItemClick(item)}
-        style={[styles.container]}
-        title={() => (
-          <>
-            <View style={[styles.containerItemName]}>
-            <Avatar.Text label={item.name.charAt(0).toUpperCase()}  size={45} />
-              <Text style={styles.title}>{`  ${item.name.toUpperCase()} ${item.lastName.toUpperCase()}`}</Text>
-            </View>
-          </>
-        )}
-      
-      />
-    )
-    };
-
-  const openInputPay = async () => {
-    setFieldPayVisible(!fieldPayVisible); // Cambia la visibilidad del campo de pago
-    let message = fieldPayVisible ? "¿Desea cambiarse al modo agregar ventas?" : "¿Desea abonar o liquidar una cuenta?";
-    const selection = await alertPay(message); // Espera la respuesta del usuario
-    setSelectionMode(selection); // Establece el modo de selección basado en la respuesta
-  }
 
   const payCountUser = async () => {
     setFieldPayVisible(true);
@@ -212,104 +158,155 @@ const ListAccessoriesShowcase = () => {
     setIsLoaded(false);
     setSaleSuccess(false);
 };
+
+  const renderItem = ({ item, index }) => {
+    return (
+      <ListItem
+        onPress={() => handleItemClick(item)}
+        style={[styles.container]}
+        title={() => (
+          <>
+            <View style={[styles.containerItemName]}>
+              <Avatar.Text label={item.name.charAt(0).toUpperCase()} size={45} style={{ backgroundColor: "#0093CE", }} />
+              <Text style={styles.title}>{`  ${item.name.toUpperCase()} ${item.lastName.toUpperCase()}`}</Text>
+            </View>
+          </>
+        )}
+
+      />
+    )
+  };
+  
+   useEffect(()=> {
+     console.log(dialogVisible, "dialogvisible")
+     console.log(total, "total")
+   },[total])
+
+
+  useEffect(()=> {
+    !dialogVisible?setFieldPayVisible(true):setFieldPayVisible(false)
+   },[dialogVisible])
+ 
+  
   return (
     <>
       <List
         data={users}
         renderItem={renderItem}
         ItemSeparatorComponent={Divider}
-        />
+      />
       <Portal>
         <Dialog
           visible={dialogVisible}
           onDismiss={handleDialogDismiss}
-          style={{ height: 470, width: 310 }}
-          >
+          style={{
+            maxWidth: 318,
+            marginHorizontal: "auto",
+            marginVertical: 40,
+            width: 340,
+            height: 450,
+            maxWidth: 432,
+            margin: 40,
+            opacity: 1,
+            borderRadius: 0
+          }}
+        >
           <Dialog.Content style={[styles.containerDialog]}>
-            <View style={{position: "absolute", bottom: 93, right: 30, zIndex: 90, borderRadius: 100, padding: 10}}>
-              { saleSuccess && <SalesPaySuccess/>}
-            </View>
-        
             <View style={[styles.containerSales]}>
               {selectedItem && (
-                 <>
+                <>
                   <View style={[styles.containerUserName]}>
-                  <Avatar.Text size={24} label={selectedItem.name.charAt(0).toUpperCase()} />
+                    <TouchableWithoutFeedback
+                      style={{
+                        display: "flex",
+                        flexDirection: "row",
+                        alignItems: "center",
+                        gap: 3
+                      }}
+                      onPress={() => {
+                        //Cerramos las dos modales para hacer el pago final
+                        navigation.navigate("PayUser")
+                     
+                        setDialogVisible(!dialogVisible),
+                        setModalVisible(false)
+                      }}
+                    >
+                      <Icon
+                        source="cash-plus"
+                        size={40}
+                        color="#0093CE"
+                      />
+                      <Text style={{ color: "#0093CE" }}>Pagar</Text>
+                    </TouchableWithoutFeedback>
                     <Text style={[styles.userSelected]}>
                       <Text style={[styles.nameUser]}>{selectedItem.name.toUpperCase()}</Text>
                     </Text>
-                    <TouchableOpacity onPress={() => { openInputPay() }}>
-                      <Image style={{ width: 45, height: 45 }} source={require("../assets/images/payment.png")} />
-                    </TouchableOpacity>
                   </View>
-                  <Divider/>
-                 </>
-                
+                  <Divider />
+                </>
               )}
               <View style={{ display: "flex", flexDirection: "row-reverse", gap: 10, marginVertical: 10 }}>
-                <Text style={{ alignSelf: "flex-end", fontSize: 20, fontWeight: "700" }}>${total}.00</Text>
-                <Image style={[styles.image]} source={require('../assets/images/monedas.png')} />
+                <Text style={{ alignSelf: "flex-end", fontSize: 20, fontWeight: "700", color: "#464555" }}>${total}.00</Text>
               </View>
-              <View style={{ height: "54%", overflow: "scroll" }}>
-                {!containerVisible && <ActivityIndicator animating={true} color="red" />}
-                {total==0&&<Text style={{position: "absolute", top: 80, left: 60, color: "gray"}}>Sin saldo Pendiente</Text>}
+              <View style={{ height: 200, overflow: "scroll" }}>
+                {/* {isLoaded && <ActivityIndicator animating={true} color="green" />} */}
+                {total == 0 && <Text style={{ position: "absolute", top: 80, left: 90, color: "#464555" }}>Sin saldo Pendiente</Text>}
                 <FlatList
                   data={data}
                   renderItem={({ item, index }) => (
                     <>
-                    <View style={[styles.containerTotal]}>
-                      <View style={[styles.date]}>
-                        <Image style={{ width: 21, height: 21 }} source={require('../assets/images/calendario.png')} />
-                        <Text style={{ marginLeft: 20, fontWeight: "800" }}>{moment(item.date).format("ll")}</Text>
+                      <View style={[styles.containerTotal]}>
+                        <View style={[styles.date]}>
+                          <Icon
+                            source="calendar-clock-outline"
+                            color="#0093CE"
+                            size={25}
+                          />
+                          <Text style={{ marginLeft: 20, fontWeight: "800", color: "#464555" }}>
+                            {moment(item.date).format('L')} {"      "} {moment(item.date).format('LT')}{moment(item.date).format('a')}
+                          </Text>
+                        </View>
+                        <Text style={{ fontWeight: "700", color: "#464555" }}>${item.total}.00</Text>
                       </View>
-                      <Text style={{ fontWeight: "700" }}>${item.total}.00</Text>
-                    </View>
-                    <Divider/>
+                      <Divider />
                     </>
                   )}
                 />
               </View>
             </View>
             <View>
-              <ActivityIndicator color="#e6008c" animating={isLoaded} style={styles.activityIndicator} />
-              {
-                !fieldPayVisible  ?
-                  <TextInput
-                    placeholder="Venta"
-                    mode="flat"
-                    value={valueSale}
-                    onChangeText={(number) => setValueSale(number)}
-                    keyboardType="numeric"
-                    style={[styles.inputvalue]}
-                    /> :
-                    fieldPayVisible && <TextInput
-                    placeholder="Pagar/Abonar"
-                    mode="flat"
-                    value={pay}
-                    onChangeText={(number) => setPay(number)}
-                    keyboardType="numeric"
-                    style={[styles.inputvalue]}
-                 
-                  />
-              }
+              <ActivityIndicator color="#0093CE" animating={isLoaded} style={styles.activityIndicator} />
+                <TextInput
+                  placeholder="$"
+                  mode="flat"
+                  value={valueSale}
+                  onChangeText={(number) => setValueSale(number)}
+                  keyboardType="numeric"
+                  style={[styles.inputvalue]}
+                />
+              
             </View>
-            <View style={{ width: 60, alignSelf: "flex-end", display: "flex"}}>
-              {!fieldPayVisible ?<AddSalesIcon />:<AddPayIcon/>}
+            <View style={{ width: 290, marginTop: 15, alignSelf: "center" }}>
+              <Button mode="contained" style={{ backgroundColor: "#0093CE", borderWidth: 0 }} onPress={() => { addSalesCustomer() }}>Enviar</Button>
             </View>
           </Dialog.Content>
         </Dialog>
       </Portal>
     </>
   );
+
+
 };
 
 const styles = StyleSheet.create({
   title: {
-    fontSize: 24,
+    fontSize: 17,
     textAlign: "center",
+    color: "#ABA9BB"
   },
   containerDialog: {
     flex: 1,
+
   },
   date: {
     width: "70%",
@@ -332,20 +329,25 @@ const styles = StyleSheet.create({
   containerItemName: {
     display: "flex",
     flexDirection: "row",
+    alignItems: "center",
     gap: 10
   },
   containerUserName: {
     display: "flex",
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center"
+    alignItems: "center",
+  },
+  avatar: {
+    backgroundColor: "#0093CE"
   },
   userSelected: {
     fontSize: 20
   },
   nameUser: {
     fontSize: 20,
-    fontWeight: "800"
+    fontWeight: "800",
+    color: "#0093CE"
   },
   image: {
     width: 30,
@@ -355,9 +357,11 @@ const styles = StyleSheet.create({
     height: 45,
     borderRadius: 7,
     backgroundColor: "white",
-    marginTop: -20,
-    paddingHorizontal: 10
+    marginTop: 15,
+    paddingHorizontal: 10,
+    color: "#464555",
   },
+
   activityIndicator: {
     position: "absolute",
     zIndex: 1,
@@ -367,7 +371,6 @@ const styles = StyleSheet.create({
   Snackbar: {
     flex: 1,
     justifyContent: 'space-between',
-
   },
   fab: {
     position: 'absolute',
@@ -375,6 +378,11 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
   },
+  pay: {
+    fontSize: 10,
+    textAlign: "center",
+
+  }
 });
 
-export { ListAccessoriesShowcase};
+export { ListAccessoriesShowcase };
