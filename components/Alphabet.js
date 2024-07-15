@@ -5,6 +5,7 @@ import { Modal, Portal, Button, Provider as PaperProvider } from 'react-native-p
 import { ListAccessoriesShowcase } from '../helpers/helpers';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import { ActivityIndicator } from 'react-native-paper';
+import PayUser from './PayUser';
 
 const AlphabetScreen = ({ navigation }) => {
   const [indicator, setIndicator] = useState(false)

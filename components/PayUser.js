@@ -1,56 +1,66 @@
-import React, { useContext, useState } from "react"
-import { View, Text, StyleSheet, TextInput } from "react-native"
-import { loginContext } from "../context/context"
-import { Button } from "@ui-kitten/components"
-import axios from "axios"
+import React, {useContext, useEffect, useState} from "react";
+import { loginContext } from "../context/context";
+import { View, StyleSheet } from "react-native";
+import { Modal, Portal, Text, PaperProvider } from 'react-native-paper';
+import { Input,Button } from "@ui-kitten/components";
+import ConfettiCannon from 'react-native-confetti-cannon'
 
 
-const PayUser = () => {
-  const { userName, total,payCountUser, pay, setPay} = useContext(loginContext)
+
+const PayUser = ({ modal, setModal,total,payCountUser,setPay,pay,setConfetti,confetti}) => {
+  const {userName} = useContext(loginContext)
+  const [visible, setIsVisible] = useState(false)
+  const hideModal = () => setModal(false);
+  const containerStyle = { backgroundColor: 'white',
+   padding: 20,
+   width: 300,
+   height: 500,
+   margin: "auto",
+   display: "flex",
+   justifyContent: "center",
+   gap:20
+ };
+
+ const Confetti = () => (
+  <ConfettiCannon count={200} origin={{x: -10, y: 0}} />
+);
+ 
+ useEffect(()=> {
+   if(!modal) {
+    setConfetti(false)
+   }
+  
+ },[modal])
+ 
+ 
   return (
-    <View style={styles.container}>
-      <Text style={styles.containerTxt}>¿ Liquidar adeudo de:  {userName.toUpperCase()} ?</Text>
-      <Text>Total credito: {total}</Text>
-      <TextInput
-        placeholder="$"
-        mode="flat"
-        value={pay}
-        onChangeText={(number) => setPay(number)}
-        keyboardType="numeric"
-        style={[styles.inputvalue]}
-      />
-      <Button style={{
-        width: 200,
-        marginVertical: 20,
-        backgroundColor: "#0093CE",
-        borderWidth: 0
-      }} onPress={() => { payCountUser() }}>
-        Pagar crédito
-      </Button>
-    </View>
-  )
-}
+    <PaperProvider>
+      <Portal>
+        <Modal visible={modal} onDismiss={hideModal} contentContainerStyle={containerStyle}>
+          {confetti && <Confetti/>}
+          <Text style={styles.txt}>Desea pagar la cuenta de: {userName.toUpperCase()}? </Text>
+          <Input
+            placeholder='Pagar cuenta'
+            value={pay}
+            onChangeText={nextValue => setPay(nextValue)}
+            keyboardType="numeric"
+          />
+          <Text style={styles.txt}>Total:{total}</Text>
+          <Text style={styles.txt}>Cambio:{Math.sign(pay - total) - 1?0 &&pay > total: pay - total}</Text>
+          <Button  onPress={()=> {payCountUser(pay)}} style={{backgroundColor:"#0093CE", borderWidth:0}}>Pagar</Button>
+
+          {/* <Button onPress={hideModal}>Cerrar</Button> */}
+        </Modal>
+      </Portal>
+    </PaperProvider>
+  );
+};
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center"
-  },
-  containerTxt: {
-    fontSize: 20,
-    fontWeight: "500"
-  },
-  inputvalue: {
-    height: 45,
-    width: 280,
-    borderRadius: 7,
-    backgroundColor: "white",
-    marginTop: 15,
-    paddingHorizontal: 10,
-    color: "#464555",
-
-  },
+ txt: {
+  fontSize:17,
+  fontWeight: "700"
+ }
 })
 
-export default PayUser
+export default PayUser;
