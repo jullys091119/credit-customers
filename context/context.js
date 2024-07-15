@@ -40,7 +40,9 @@ const ProviderLogin = ({ children, navigation }) => {
   const [idUserSale, setIdUserSale] = useState("")
   const [isLoaded, setIsLoaded] = useState(false)
   const [valueSale, setValueSale] = useState("");
-
+  const [date, setDate] = useState(null);
+  const [msg, setMsg]= useState("")
+  const [visibleModalReminders, setVisibleModalReminders] = useState(false);
 
  
   const getSalesNoteBook = async (id) => {
@@ -303,11 +305,70 @@ const ProviderLogin = ({ children, navigation }) => {
         ]);
     });
   }
+ 
+  const addReminders = async (msg, date) => {
+    const formattedDate = moment(date).utc().format(); // Use `.utc()` to get the correct UTC format
+    console.log(formattedDate, "fecha formateado");
+  
+    const options = {
+      method: "POST",
+      url: "https://elalfaylaomega.com/credit-customer/jsonapi/node/reminders",
+      headers: {
+        Accept: "application/vnd.api+json",
+        Authorization: "Authorization: Basic YXBpOmFwaQ==",
+        "Content-Type": "application/vnd.api+json",
+        "X-CSRF-Token": tk,
+      },
+      data: {
+        data: {
+          type: "node--reminders",
+          attributes: {
+            title: `Recordatorio de ${nameUser}`,
+            field_reminders_date: formattedDate,
+            field_reminders: msg,
+          },
+        },
+      },
+    };
+  
+    try {
+      const response = await axios.request(options);
+      if(response)  {
+        setMsg("")
+        setVisibleModalReminders(false)
+      }
+    } catch (error) {
+      console.error(error.response.data, "error al ejecutar el listado de ventas");
+    }
+  };
 
 
+  const getReminders = () => {
+    const options = {
+      method: 'GET',
+      url: 'https://elalfaylaomega.com/credit-customer/jsonapi/node/reminders',
+      headers: {'User-Agent': 'insomnia/8.6.1', 'Content-Type': 'application/json'}
+    };
+    return axios
+    .request(options)
+    .then(async function(response) {
+      let currentReminders = []
+      response.data.data.forEach((reminders)=> {
+        const  note = {
+          msg: reminders.attributes.field_reminders,
+          date: reminders.attributes.field_reminders_date
+        }
+        currentReminders.push(note)
+      })
+      return currentReminders
+    }).catch(function(error) {
+      console.log(error.config);
+    })
+  }
+  
 
   useEffect(()=> {
-  
+  getReminders()
   },[image])
   return ( 
     <loginContext.Provider value={{ login,
@@ -334,6 +395,13 @@ const ProviderLogin = ({ children, navigation }) => {
      setValueSale,
      setTotal,
      alertPay,
+     addReminders,
+     setDate,
+     setMsg,
+     setVisibleModalReminders,
+     getReminders,
+     visibleModalReminders,
+     date,
      users,
      user,
      pass,
@@ -349,6 +417,7 @@ const ProviderLogin = ({ children, navigation }) => {
      idUserSale,
      total,
      valueSale,
+     msg
      }}>
       {children}
     </loginContext.Provider>
