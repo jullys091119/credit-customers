@@ -40,7 +40,8 @@ const ProviderLogin = ({ children, navigation }) => {
   const [idUserSale, setIdUserSale] = useState("")
   const [isLoaded, setIsLoaded] = useState(false)
   const [valueSale, setValueSale] = useState("");
-  const [pay, setPay] = useState("")
+
+
  
   const getSalesNoteBook = async (id) => {
     const options = {
@@ -304,7 +305,7 @@ const ProviderLogin = ({ children, navigation }) => {
   }
 
 
-  
+
   useEffect(()=> {
   
   },[image])
@@ -330,15 +331,12 @@ const ProviderLogin = ({ children, navigation }) => {
      setIdUserSale,
      setUser,
      setPass,
-     setPay,
      setValueSale,
-     isDialogVisible,
-     pay,
+     setTotal,
      alertPay,
      users,
      user,
      pass,
-     showHome,
      sales,
      mounted,
      nameUser,
@@ -350,7 +348,7 @@ const ProviderLogin = ({ children, navigation }) => {
      userName,
      idUserSale,
      total,
-     valueSale
+     valueSale,
      }}>
       {children}
     </loginContext.Provider>

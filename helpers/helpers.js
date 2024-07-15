@@ -1,4 +1,4 @@
-import { React, useContext, useEffect, useState } from "react";
+import { React, useContext, useEffect, useState, useRef } from "react";
 import { Button, List, ListItem, Divider, Text } from "@ui-kitten/components";
 import { Icon, Portal, Dialog, ActivityIndicator, Avatar } from "react-native-paper";
 import { StyleSheet, View, Image, TouchableOpacity, TextInput } from "react-native";
@@ -7,7 +7,7 @@ import { FlatList, TouchableWithoutFeedback } from "react-native-gesture-handler
 import { useNavigation } from "@react-navigation/native";
 import moment from "moment";
 import axios from "axios";
-
+import PayUser from "../components/PayUser";
 
 const ListAccessoriesShowcase = ({ navigation }) => {
   const [dialogVisible, setDialogVisible] = useState(false);
@@ -17,25 +17,24 @@ const ListAccessoriesShowcase = ({ navigation }) => {
   const [valueSale, setValueSale] = useState("");
   const [inputVisible, setInputVisible] = useState(false);
   const [idUserSale, setIdUserSale] = useState("")
-  const [userName, setUserName] = useState("")
   const [containerVisible, setContainerVisible] = useState(false)
-  const [pay, setPay] = useState("")
   const [fieldPayVisible, setFieldPayVisible] = useState(false)
   const [isSended, setIsSended] = useState(false)
   const [isLoaded, setIsLoaded] = useState(false)
   const [saleSuccess, setSaleSuccess] = useState(false)
-  const  [selectionMode, setSelectionMode] = useState("")
-  const [modalVisible, setModalVisible] = useState(false)
-  const { users, getCurrentUser, setShowHome, getSalesNoteBook, tk, alertErrorsSales, alertPay} = useContext(loginContext);
-  
+  const [isModalVisible, setModalVisible] = useState(false);
+  const [pay,setPay] = useState("")
+  const [confetti, setConfetti] = useState(false)
+  const { users, getCurrentUser, setShowHome, getSalesNoteBook, tk, alertErrorsSales,setUserName, userName } = useContext(loginContext);
+
   const currentSales = async () => {
     await getCurrentUser();
   };
-  
 
-  const addSalesCustomer = async(total) => { 
+
+  const addSalesCustomer = async (total) => {
     const currentDay = moment()
-    if(total !== 0 && Math.sign(total) != -1) {
+    if (total !== 0 && Math.sign(total) != -1) {
       setIsLoaded(true)
       const options = {
         method: "POST",
@@ -58,109 +57,115 @@ const ListAccessoriesShowcase = ({ navigation }) => {
           },
         },
       };
-        axios
-          .request(options)
-          .then(async function (response) {
-            setValueSale("")
-            setIsSended(true)
-            if (response.data) {
-             setIsLoaded(false)
-              setSaleSuccess(true)
-              const data = await getSalesNoteBook(idUserSale)
-              setData(data)
-              const salesTotal = data.reduce(
-                (total, item) => parseInt(total) + parseInt(item.total),
-                0
-              );
-             
-              setTotal(salesTotal);
-              setSaleSuccess(false)
-            }
-            
-          })
-          .catch(function (error) {
-            console.error(error, "error al ejecutar el listado de ventas");
-          });
+      axios
+        .request(options)
+        .then(async function (response) {
+          setValueSale("")
+          setIsSended(true)
+          if (response.data) {
+            setIsLoaded(false)
+            setSaleSuccess(true)
+            const data = await getSalesNoteBook(idUserSale)
+            setData(data)
+            const salesTotal = data.reduce(
+              (total, item) => parseInt(total) + parseInt(item.total),
+              0
+            );
 
-    
+            setTotal(salesTotal);
+          }
+
+        })
+        .catch(function (error) {
+          console.error(error, "error al ejecutar el listado de ventas");
+        });
+
+
     } else {
       setTotal(0)
       setData("")
     }
   };
- 
- //Cuando clikeo la letra
- const handleItemClick = async (item) => {
-  try {
-    setUserName(item.name)
-    setIdUserSale(item.id)
-    setSelectedItem(item);
-    setDialogVisible(true);
-    setInputVisible(true);
-    await currentSales(item.id)
-    const data = await getSalesNoteBook(item.id);
-    setData(data);
-    const salesTotal = data.reduce(
-      (total, item) => parseInt(total) + parseInt(item.total),
-      0
-    );
-    setTotal(salesTotal);
-    setContainerVisible(true)
-  } catch (error) {
-    setContainerVisible(false)
-  }
-};
+
+  //Cuando clikeo la letra
+  const handleItemClick = async (item) => {
+    try {
+      setUserName(item.name)
+      setIdUserSale(item.id)
+      setSelectedItem(item);
+      setDialogVisible(true);
+      setInputVisible(true);
+      await currentSales(item.id)
+      const data = await getSalesNoteBook(item.id);
+      setData(data);
+      const salesTotal = data.reduce(
+        (total, item) => parseInt(total) + parseInt(item.total),
+        0
+      );
+      setTotal(salesTotal);
+      setContainerVisible(true)
+    } catch (error) {
+      setContainerVisible(false)
+    }
+  };
 
   const handleDialogDismiss = () => {
     setDialogVisible(false);
     setSelectedItem(null);
   };
 
+  const toggleModal = () => {
+    setModalVisible(!isModalVisible);
+    setDialogVisible(false)
+  };
 
-  const payCountUser = async () => {
+  const payCountUser = async (pay) => {
     setFieldPayVisible(true);
     let idSales = data.map((item) => item.id); // Asumo que necesitas esto independientemente de otros factores.
     let isLoaded = false;
     if (idSales.length > 0 && pay !== "" && !isNaN(pay)) { // Verificamos si hay ventas y si se proporciona un valor de pago válido.
-        setIsLoaded(true);
-        for (const id of idSales) {
-            try {
-                const response = await axios.delete(`https://elalfaylaomega.com/credit-customer/jsonapi/node/sales_notebook/${id}`, {
-                    headers: {
-                        'Content-Type': 'application/vnd.api+json',
-                        Authorization: 'Basic YXBpOmFwaQ=='
-                    }
-                });
+      setIsLoaded(true);
+      for (const id of idSales) {
+        try {
+          const response = await axios.delete(`https://elalfaylaomega.com/credit-customer/jsonapi/node/sales_notebook/${id}`, {
+            headers: {
+              'Content-Type': 'application/vnd.api+json',
+              Authorization: 'Basic YXBpOmFwaQ=='
+            }
+          });
 
-                if (response.status === 204) {
-                    isLoaded = true;
-                    setSaleSuccess(true);
-                }
-            } catch (error) {
-                console.error(error, "error al actualizar");
-            }
+          if (response.status === 204) {
+            isLoaded = true;
+            setSaleSuccess(true);
+            setConfetti(true)
+          }
+        } catch (error) {
+          console.error(error, "error al actualizar");
         }
-        // Si todas las ventas se eliminaron correctamente, calculamos el nuevo valor de la venta y hacemos el registro de la venta.
-        if (isLoaded) {
-          const newValue = total - parseFloat(pay); // Restamos el pago al total.
-          if (!isNaN(newValue) && newValue !== total && newValue !== pay ) { // Verificamos si el nuevo valor es válido y diferente al total original.
-              addSalesCustomer(newValue);
-              setValueSale("");
-              setPay("");
-            } else {
-                console.error("Error en el cálculo del nuevo valor de la venta.");
-            }
+      }
+      // Si todas las ventas se eliminaron correctamente, calculamos el nuevo valor de la venta y hacemos el registro de la venta.
+      if (isLoaded) {
+        const newValue = total - parseFloat(pay); // Restamos el pago al total.
+        if (!isNaN(newValue) && newValue !== total && newValue !== pay) { // Verificamos si el nuevo valor es válido y diferente al total original.
+          addSalesCustomer(newValue);
+          setValueSale("");
+          setPay("");
+        } else {
+          console.error("Error en el cálculo del nuevo valor de la venta.");
         }
-    } else { 
+      }
+    } else {
       alertErrorsSales("No puedes dejar el campo vacío o cuenta sin adeudo"); // Alerta si hay problemas con los datos de la venta.
     }
 
     setIsLoaded(false);
-    setSaleSuccess(false);
-};
+     setSaleSuccess(false)
+   
+  };
 
   const renderItem = ({ item, index }) => {
     return (
+      
       <ListItem
         onPress={() => handleItemClick(item)}
         style={[styles.container]}
@@ -176,26 +181,28 @@ const ListAccessoriesShowcase = ({ navigation }) => {
       />
     )
   };
-  
-   useEffect(()=> {
-     console.log(dialogVisible, "dialogvisible")
-     console.log(total, "total")
-   },[total])
+
+  useEffect(() => {
+    !dialogVisible ? setFieldPayVisible(true) : setFieldPayVisible(false)
+  }, [dialogVisible])
 
 
-  useEffect(()=> {
-    !dialogVisible?setFieldPayVisible(true):setFieldPayVisible(false)
-   },[dialogVisible])
- 
-  
   return (
     <>
       <List
         data={users}
         renderItem={renderItem}
         ItemSeparatorComponent={Divider}
-      />
+        />
       <Portal>
+       <PayUser modal={isModalVisible} 
+       setModal={setModalVisible} total={total}
+       payCountUser={payCountUser}
+       setPay={setPay} 
+       pay={pay}
+       setConfetti={setConfetti} 
+       confetti={confetti}
+       />
         <Dialog
           visible={dialogVisible}
           onDismiss={handleDialogDismiss}
@@ -208,10 +215,13 @@ const ListAccessoriesShowcase = ({ navigation }) => {
             maxWidth: 432,
             margin: 40,
             opacity: 1,
-            borderRadius: 0
+            borderRadius: 0,
+            zIndex:0,
+            position: "relative"
           }}
         >
           <Dialog.Content style={[styles.containerDialog]}>
+           
             <View style={[styles.containerSales]}>
               {selectedItem && (
                 <>
@@ -224,24 +234,21 @@ const ListAccessoriesShowcase = ({ navigation }) => {
                         gap: 3
                       }}
                       onPress={() => {
-                        //Cerramos las dos modales para hacer el pago final
-                        navigation.navigate("PayUser")
-                     
-                        setDialogVisible(!dialogVisible),
-                        setModalVisible(false)
+                        toggleModal()
                       }}
                     >
                       <Icon
                         source="cash-plus"
                         size={40}
                         color="#0093CE"
-                      />
+                        />
                       <Text style={{ color: "#0093CE" }}>Pagar</Text>
                     </TouchableWithoutFeedback>
                     <Text style={[styles.userSelected]}>
                       <Text style={[styles.nameUser]}>{selectedItem.name.toUpperCase()}</Text>
                     </Text>
                   </View>
+          
                   <Divider />
                 </>
               )}
@@ -276,15 +283,15 @@ const ListAccessoriesShowcase = ({ navigation }) => {
             </View>
             <View>
               <ActivityIndicator color="#0093CE" animating={isLoaded} style={styles.activityIndicator} />
-                <TextInput
-                  placeholder="$"
-                  mode="flat"
-                  value={valueSale}
-                  onChangeText={(number) => setValueSale(number)}
-                  keyboardType="numeric"
-                  style={[styles.inputvalue]}
-                />
-              
+              <TextInput
+                placeholder="$"
+                mode="flat"
+                value={valueSale}
+                onChangeText={(number) => setValueSale(number)}
+                keyboardType="numeric"
+                style={[styles.inputvalue]}
+              />
+
             </View>
             <View style={{ width: 290, marginTop: 15, alignSelf: "center" }}>
               <Button mode="contained" style={{ backgroundColor: "#0093CE", borderWidth: 0 }} onPress={() => { addSalesCustomer() }}>Enviar</Button>
@@ -292,9 +299,9 @@ const ListAccessoriesShowcase = ({ navigation }) => {
           </Dialog.Content>
         </Dialog>
       </Portal>
+      
     </>
   );
-
 
 };
 
