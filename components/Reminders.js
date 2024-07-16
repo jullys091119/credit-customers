@@ -1,123 +1,129 @@
-import React, { useState, useContext, useEffect } from "react";
-import { View, StyleSheet, Text, FlatList,ScrollView } from "react-native";
-import { loginContext } from "../context/context";
-import { FAB, Provider as PaperProvider, Portal, Modal, Button, Icon, TextInput } from 'react-native-paper';
-import { TouchableOpacity, TouchableWithoutFeedback } from "react-native-gesture-handler";
-import { CalendarCustomDayShowcase } from "./Calendar";
+import React, { useState, useContext, useEffect } from 'react';
+import { View, StyleSheet, Text, FlatList, ScrollView,Keyboard, KeyboardEvent, KeyboardEventListener  } from 'react-native';
+import { loginContext } from '../context/context';
+import { FAB, Provider as PaperProvider, Portal, Modal, Icon, TextInput } from 'react-native-paper';
+import { TouchableOpacity, TouchableWithoutFeedback } from 'react-native-gesture-handler';
+import { CalendarCustomDayShowcase } from './Calendar';
 import Swipeable from 'react-native-gesture-handler/Swipeable';
-import moment from "moment";
+import moment from 'moment';
+import 'moment/locale/es'; // Importar el locale en español
+import { Button } from '@ui-kitten/components';
+
 const Reminders = () => {
-  const { addReminders, date, msg, setMsg, setVisibleModalReminders, visibleModalReminders, getReminders } = useContext(loginContext)
-  const [dateModalVisible, setDateModalVisible] = useState(false)
+  const { addReminders, date, msg, setMsg, setVisibleModalReminders, visibleModalReminders, getReminders,deleteReminders } = useContext(loginContext);
+  const [dateModalVisible, setDateModalVisible] = useState(false);
   const [dataReminders, setDataReminders] = useState([]);
-
-
-
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
   const showModal = () => setVisibleModalReminders(true);
   const hideModal = () => setVisibleModalReminders(false);
-
-  const showModalDate = () => setDateModalVisible(true)
-  const hideModalDate = () => setDateModalVisible(false)
+  const showModalDate = () => setDateModalVisible(true);
+  const hideModalDate = () => setDateModalVisible(false);
+  const [nid, setNid] = useState("")
 
   const gettingCurrentReminders = async () => {
     try {
       const data = await getReminders();
+      console.log('Fetched reminders:', data);
       setDataReminders(data);
     } catch (error) {
-      console.error("Error fetching reminders:", error);
+      console.error('Error fetching reminders:', error);
     }
   };
 
+  useEffect(() => {
+    gettingCurrentReminders();
+  }, [nid]);
+  
+
+  
+
+  const handleAddReminder = async () => {
+    try {
+      await addReminders(msg, date);
+      await gettingCurrentReminders(); // Refresca la lista después de agregar
+      setMsg('');
+      hideModal();
+    } catch (error) {
+      console.error('Error adding reminder:', error);
+    }
+  };
+
+
+
+  const handleDeleteReminders =  async(nid) => {
+    setNid(nid)
+    await deleteReminders(nid)
+  }
+
   const renderItem = ({ item, index }) => (
-
-
     <Swipeable
-      renderRightActions={() => (
-        <TouchableOpacity style={styles.deleteButton} onPress={() => deleteReminder(index)}>
+    renderRightActions={() => (
+      <TouchableOpacity style={styles.deleteButton} onPress={() => handleDeleteReminders(item.nid)}>
           <Text style={styles.deleteText}>Eliminar</Text>
         </TouchableOpacity>
       )}
     >
       <View style={styles.itemContainer}>
-      <ScrollView style={styles.container}>
         <Text style={styles.itemText}>
-          {item.msg}{"      "}
-          {moment(item.date).format("ll")}
+          {item.msg || "No Message"}
         </Text>
-
-      </ScrollView>
-
+        <Text style={styles.itemDate}>
+          {item.date ? moment(item.date).format('dddd DD [de] MMMM') : "No Date"}
+          {/* Formato: sábado 23 de abril */}
+        </Text>
       </View>
     </Swipeable>
   );
 
-  useEffect(() => {
-    gettingCurrentReminders();
-  }, []);
-
-
   return (
     <PaperProvider>
-      <View style={styles.container}>
         <View style={styles.header}>
           <Text style={styles.headerTxt}>Recordatorios</Text>
         </View>
-      
         <FlatList
           data={dataReminders}
           renderItem={renderItem}
           keyExtractor={(item, index) => index.toString()}
           contentContainerStyle={styles.listContainer}
-          showsVerticalScrollIndicator={false}
-  
         />
-
-        
         <FAB
           icon="plus"
           style={styles.fab}
           onPress={showModal}
           color="white"
         />
-
         <Portal>
           <Modal visible={dateModalVisible} onDismiss={hideModalDate} contentContainerStyle={styles.modalContainer}>
             <CalendarCustomDayShowcase />
-            <Button onPress={hideModal}>Cerrar</Button>
+            <Button onPress={hideModalDate}>Cerrar</Button>
           </Modal>
         </Portal>
-
-
         <Portal>
-          <Modal visible={visibleModalReminders} onDismiss={hideModalDate} contentContainerStyle={styles.modalContainer}>
+          <Modal visible={visibleModalReminders} onDismiss={hideModal} contentContainerStyle={styles.modalContainer}>
             <View style={styles.headerModal}>
-              <Icon source="clock-outline" color="#e6008c" size={37} />
               <Text style={styles.txtReminders}>Crear Recordatorio</Text>
+              <View style={styles.bodyDate}>
+                  <TouchableWithoutFeedback onPress={showModalDate}>
+                    <Icon source="calendar" color="#0093CE" size={37} />
+                  </TouchableWithoutFeedback>
+                </View>
             </View>
             <View style={styles.body}>
               <View style={styles.form}>
                 <Text style={styles.formTxt}>Recordatorio</Text>
-                <TextInput mode="outlined"
+                <TextInput
+                  mode="outlined"
                   multiline={true}
                   value={msg}
-                  style={{ padding: 10 }}
+                  style={{ padding: 10, height: 80 }}
                   onChangeText={(txt) => setMsg(txt)}
                 />
-                <View style={styles.bodyDate}>
-                  <TouchableWithoutFeedback onPress={showModalDate}>
-                    <Icon source="clock-in" color="#e6008c" size={37} />
-                    <Text>Agregar fecha de recordatorio</Text>
-                  </TouchableWithoutFeedback>
-                </View>
-                <Button icon="send-outline" mode="contained" onPress={() => { addReminders(msg, date) }}>
-                  Crear Recordatorio
-                </Button>
+
+                <Button  onPress={handleAddReminder} style={{backgroundColor:"#0093CE", borderWidth:0, marginVertical: 15}}>Crear</Button>
               </View>
             </View>
-            <Button onPress={hideModal}>Cerrar</Button>
           </Modal>
         </Portal>
-      </View>
     </PaperProvider>
   );
 };
@@ -130,55 +136,56 @@ const styles = StyleSheet.create({
   fab: {
     width: 60,
     height: 60,
-    position: "absolute",
+    position: 'absolute',
     bottom: 30,
     right: 20,
     padding: 3,
-    backgroundColor: "#0093CE"
+    backgroundColor: '#0093CE',
   },
   header: {
     padding: 20,
   },
   headerTxt: {
     fontSize: 20,
-    fontWeight: "500",
+    fontWeight: '500',
   },
   modalContainer: {
     backgroundColor: 'white',
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "flex-start",
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'flex-start',
     padding: 20,
     margin: 20,
     borderRadius: 10,
-    height: 500
+    height: 300,  
   },
   headerModal: {
     height: 45,
-    display: "flex",
-    flexDirection: "row",
-    justifyContent: "flex-start",
-    alignItems: "center",
-    gap: 10
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: 10,
   },
   txtReminders: {
-    fontWeight: "600"
+    fontWeight: '600',
+    marginLeft: 9
   },
   body: {
     flex: 1,
-    padding: 10
+    padding: 10,
   },
   formTxt: {
-    fontWeight: "bold",
-    marginVertical: 10
+    fontWeight: 'bold',
+    marginVertical: 10,
   },
   bodyDate: {
     height: 60,
     paddingVertical: 10,
-    display: "flex",
-    flexDirection: "row",
-    alignItems: "center",
-    marginVertical: 20
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight:10,
   },
   listContainer: {
     padding: 10,
@@ -193,6 +200,12 @@ const styles = StyleSheet.create({
   itemText: {
     fontSize: 16,
     color: '#333',
+    fontWeight: "800"
+  },
+  itemDate: {
+    fontSize: 14,
+    color: '#0093CE',
+    fontWeight: "600"
   },
   deleteButton: {
     backgroundColor: '#FF4D4D',

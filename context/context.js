@@ -6,8 +6,8 @@ import * as FileSystem from 'expo-file-system';
 import { decode, encode } from 'base-64';
 import { Alert } from "react-native";
 import moment from "moment";
+import 'moment/locale/es'; 
 const loginContext = createContext();
-
 // Configura el módulo base-64
 if (!global.btoa) {
   global.btoa = encode;
@@ -301,14 +301,16 @@ const ProviderLogin = ({ children, navigation }) => {
         Alert.alert('Selecciona modo', mnsg, [
             {
                 text: 'Ok'
-            }
+            }   
         ]);
     });
   }
  
   const addReminders = async (msg, date) => {
+    console.log(date, "date")
+    const today = moment().utc().format('YYYY-MM-DDTHH:mm:ss[Z]');
+    console.log(today)
     const formattedDate = moment(date).utc().format(); // Use `.utc()` to get the correct UTC format
-    console.log(formattedDate, "fecha formateado");
   
     const options = {
       method: "POST",
@@ -324,7 +326,7 @@ const ProviderLogin = ({ children, navigation }) => {
           type: "node--reminders",
           attributes: {
             title: `Recordatorio de ${nameUser}`,
-            field_reminders_date: formattedDate,
+            field_reminders_date: date!==null?formattedDate:today,
             field_reminders: msg,
           },
         },
@@ -338,7 +340,7 @@ const ProviderLogin = ({ children, navigation }) => {
         setVisibleModalReminders(false)
       }
     } catch (error) {
-      console.error(error.response.data, "error al ejecutar el listado de ventas");
+      console.error(error.response.data, "error al ejecutar el listado de recordatorios");
     }
   };
 
@@ -355,6 +357,7 @@ const ProviderLogin = ({ children, navigation }) => {
       let currentReminders = []
       response.data.data.forEach((reminders)=> {
         const  note = {
+          nid: reminders.attributes.drupal_internal__nid,
           msg: reminders.attributes.field_reminders,
           date: reminders.attributes.field_reminders_date
         }
@@ -365,10 +368,45 @@ const ProviderLogin = ({ children, navigation }) => {
       console.log(error.config);
     })
   }
+  const deleteReminders = (nid) => {
+    console.log(nid, "nid");
+  
+    const url = `https://elalfaylaomega.com/credit-customer/node/` + nid;
+  
+    const options = {
+      method: 'DELETE',
+      url: url,
+      headers: {
+        Accept: "application/vnd.api+json",
+        "Authorization": "Basic YXBpOmFwaQ==",
+        "Content-Type": "application/vnd.api+json",
+      },
+    };
+  
+    return axios.request(options)
+      .then(response => {
+        console.log(response, "Eliminación exitosa");
+      })
+      .catch(error => {
+        if (error.response) {
+          console.log('Error en la respuesta:', error.response.data);
+          console.log('Código de estado:', error.response.status);
+          console.log('Encabezados:', error.response.headers);
+        } else if (error.request) {
+          console.log('Error en la solicitud:', error.request);
+        } else {
+          console.log('Error:', error.message);
+        }
+        console.log('Configuración de la solicitud:', error.config);
+      });
+  };
+  
+  // Uso
+
   
 
   useEffect(()=> {
-  getReminders()
+
   },[image])
   return ( 
     <loginContext.Provider value={{ login,
@@ -400,6 +438,7 @@ const ProviderLogin = ({ children, navigation }) => {
      setMsg,
      setVisibleModalReminders,
      getReminders,
+     deleteReminders,
      visibleModalReminders,
      date,
      users,

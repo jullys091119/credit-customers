@@ -4,10 +4,10 @@
     "slug": "credit-customers",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/tienda-en-linea.png",
+    "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/tienda-en-linea.png",
+      "image": "./assets/icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -19,7 +19,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/tienda-en-linea.png",
+        "foregroundImage": "./assets/icon.png",
         "backgroundColor": "#ffffff"
       },
       "package": "com.huerogil.creditcustomers"

@@ -115,12 +115,11 @@ const styles =  StyleSheet.create({
     height: 30
   },
   containerWelcome: {
-    alignSelf: "flex-start",
     marginHorizontal: 34,
     display: "flex",
     flexDirection: "row-reverse",
     alignItems:"center",
-    gap: 80
+    gap: 80,
   },
   loginText: {
     color: "white",
