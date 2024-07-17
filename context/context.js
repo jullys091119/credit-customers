@@ -43,7 +43,7 @@ const ProviderLogin = ({ children, navigation }) => {
   const [date, setDate] = useState(null);
   const [msg, setMsg]= useState("")
   const [visibleModalReminders, setVisibleModalReminders] = useState(false);
-
+ const [confetti, setConfetti] = useState(false)
  
   const getSalesNoteBook = async (id) => {
     const options = {
@@ -401,12 +401,68 @@ const ProviderLogin = ({ children, navigation }) => {
       });
   };
   
-  // Uso
+  async function sendPushNotification(expoPushToken) {
+ 
+  const message = {
+    to: expoPushToken,
+    sound: 'default',
+    title: 'Buenos días',
+    body: 'Tarea nueva!',
+    data: { someData: 'goes here' },
+  };
+
+  try {
+    // Enviar el token a Drupal
+    const options = {
+      method: "POST",
+      url: "https://elalfaylaomega.com/credit-customer/jsonapi/node/notification_push",
+      headers: {
+        Accept: "application/vnd.api+json",
+        Authorization: "Authorization: Basic YXBpOmFwaQ==",
+        "Content-Type": "application/vnd.api+json",
+        
+      },
+      data: {
+        data: {
+          type: "node--reminders",
+          attributes: {
+            title: `Recordatorio`,
+            field_token: expoPushToken
+          
+          },
+        },
+      },
+    };
+
+    try {
+      const response = await axios.request(options);
+      if(response)  {
+       console.log(response)
+      }
+    } catch (error) {
+      console.error(error.response.data, "error al ejecutar el listado de recordatorios");
+    }
+
+    // Enviar notificación a Expo
+    const expoResponse = await axios.post('https://exp.host/--/api/v2/push/send', message, {
+      headers: {
+        Accept: 'application/json',
+        'Accept-encoding': 'gzip, deflate',
+        'Content-Type': 'application/json',
+      },
+    });
+
+    console.log('Notificación enviada a Expo:', expoResponse.data);
+  } catch (error) {
+    console.error('Error al enviar notificación:', error);
+  }
+}
+
 
   
 
   useEffect(()=> {
-
+  console.log(users, "users<")
   },[image])
   return ( 
     <loginContext.Provider value={{ login,
@@ -436,6 +492,8 @@ const ProviderLogin = ({ children, navigation }) => {
      addReminders,
      setDate,
      setMsg,
+     setConfetti,
+     confetti,
      setVisibleModalReminders,
      getReminders,
      deleteReminders,
