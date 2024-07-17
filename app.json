@@ -22,7 +22,14 @@
         "foregroundImage": "./assets/icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.huerogil.creditcustomers"
+      "package": "com.huerogil.creditcustomers",
+      "permissions": [
+        "NOTIFICATIONS",
+        "ACCESS_FINE_LOCATION",
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -46,8 +53,8 @@
     "updates": {
       "url": "https://u.expo.dev/6e84cd78-fa0d-4f9f-a08a-ef3d6eb22189",
       "enabled": true,
-       "fallbackToCacheTimeout": 0,
-       "checkAutomatically": "ON_LOAD"
+      "fallbackToCacheTimeout": 0,
+      "checkAutomatically": "ON_LOAD"
     }
   }
 }
