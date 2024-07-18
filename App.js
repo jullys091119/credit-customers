@@ -9,61 +9,73 @@ import { ApplicationProvider } from '@ui-kitten/components';
 import messaging from '@react-native-firebase/messaging';
 import { Alert } from 'react-native';
 
-
 export default function App() {
   
-  
-  async function requestUserPermission() {
-    const authStatus = await messaging().requestPermission();
-    const enabled =
-      authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
-      authStatus === messaging.AuthorizationStatus.PROVISIONAL;
-
-    if (enabled) {
-      console.log('Authorization status:', authStatus);
-      
-    }
-  }
-
-
   useEffect(() => {
-
-    if(requestUserPermission()) {
-        messaging()
-        .getToken()
-        .then((token)=> {
-          console.log(token)
-        })
-      } else {
-        console.log("Permission not granted", authStatus)
-    }
-
-    messaging()
-    .getInitialNotification()
-    .then(async (remoteMessage)=> {
-      if(remoteMessage) {
-        console.log("Notification caused app to open from quit state", remoteMessage)
+    // Función para solicitar permiso de usuario para notificaciones
+    const requestUserPermission = async () => {
+      try {
+        const authStatus = await messaging().requestPermission();
+        const enabled =
+          authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+          authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+  
+        if (enabled) {
+          console.log('Authorization status:', authStatus);
+          const token = await messaging().getToken();
+          console.log('Firebase token:', token);
+        } else {
+          console.log('Permission not granted');
+        }
+      } catch (error) {
+        console.error('Error requesting permission:', error);
       }
-    })
+    };
 
-   
-    messaging().onNotificationOpenedApp((remoteMessage)=> {
-      console.log("Notification caused app to open from background state", remoteMessage.notification)
-    })
+    // Llamar a la función para solicitar permiso
+    requestUserPermission();
 
+    // Función para manejar la notificación cuando la aplicación está abierta
+    const handleForegroundNotification = async (remoteMessage) => {
+      console.log('Notification received in foreground:', remoteMessage.notification);
+      const { title, body } = remoteMessage.notification;
+      Alert.alert(title, body);
+    };
 
-    messaging().setBackgroundMessageHandler(async (remoteMessage)=> {
-      console.log("Message handled in the background!",remoteMessage)
-    })
+    // Función para manejar la notificación cuando la aplicación está en segundo plano
+    const handleBackgroundNotification = async (remoteMessage) => {
+      console.log('Notification opened from background:', remoteMessage.notification);
+    };
 
-    const unsubscribe = messaging().onMessage(async(remoteMessage)=> {
-      Alert.alert("A new FCM message arrived!", JSON.stringify(remoteMessage))
-    })
+    // Configurar los listeners para manejar las notificaciones
+    const unsubscribeForeground = messaging().onMessage(async (remoteMessage) => {
+      handleForegroundNotification(remoteMessage);
+    });
 
-    
-    return unsubscribe
+    const unsubscribeBackground = messaging().setBackgroundMessageHandler(async (remoteMessage) => {
+      handleBackgroundNotification(remoteMessage);
+    });
 
-      
+    const unsubscribeOpenApp = messaging().onNotificationOpenedApp((remoteMessage) => {
+      handleBackgroundNotification(remoteMessage);
+    });
+
+    // Manejar la notificación inicial si la aplicación se abre desde una notificación
+    messaging()
+      .getInitialNotification()
+      .then(async (remoteMessage) => {
+        if (remoteMessage) {
+          handleBackgroundNotification(remoteMessage);
+        }
+      });
+
+    // Limpiar los listeners al desmontar el componente
+    return () => {
+      unsubscribeForeground();
+      unsubscribeBackground();
+      unsubscribeOpenApp();
+    };
+
   }, []);
 
   return (
