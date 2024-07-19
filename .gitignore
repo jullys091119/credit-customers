@@ -36,3 +36,6 @@ yarn-error.*
 
 # Ignorar el archivo eas.json
 eas.json
+
+# Ignorar el archivo de llaves de servicio de Firebase
+serviceAccountKey.json
