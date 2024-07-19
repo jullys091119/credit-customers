@@ -23,15 +23,15 @@ Notifications.setNotificationHandler({
 });
 
 export async function sendPushNotification(expoPushToken, msg) {
-  console.log(expoPushToken, msg, ">>>>>>>>>>>>>>>>")
+  console.log(expoPushToken, msg, ">>>>>>>>>>>>>>>>");
   const token = await AsyncStorage.getItem('@TOKEN');
   const message = {
     to: expoPushToken,
-    sound: Platform.OS === 'android' ? 'default' : 'tono.mp3', // Sonido personalizado para iOS
+    sound: Platform.OS === 'android' ? 'default' : 'tono.mp3', // Usando el sonido por defecto en Android
     title: 'Abarrotes Juliancito',
     body: msg,
     data: { someData: 'goes here' },
-    channelId: Platform.OS === 'android' ? 'custom-sound-channel' : undefined, // Canal personalizado para Android
+    channelId: 'default', // Usando el canal default
   };
 
   try {
@@ -83,10 +83,10 @@ function handleRegistrationError(errorMessage) {
 
 async function registerForPushNotificationsAsync() {
   if (Platform.OS === 'android') {
-    await Notifications.setNotificationChannelAsync('custom-sound-channel', {
-      name: 'Custom Sound Channel',
+    await Notifications.setNotificationChannelAsync('default', {
+      name: 'default',
       importance: Notifications.AndroidImportance.MAX,
-      sound: 'tono.mp3',
+      sound: 'default', // Usando el sonido por defecto
       vibrationPattern: [0, 250, 250, 250],
       lightColor: '#FF231F7C',
     });
@@ -129,30 +129,26 @@ export default function App() {
   const responseListener = useRef();
 
   const setToken = async (tk) => {
-    console.log(tk, "toen")
-   await AsyncStorage.setItem("NOTIFY-TK", tk)
-  }
+    console.log(tk, "toen");
+    await AsyncStorage.setItem('NOTIFY-TK', tk);
+  };
 
   useEffect(() => {
-    registerForPushNotificationsAsync().then((token) => { 
+    registerForPushNotificationsAsync().then((token) => {
       if (token) {
         setExpoPushToken(token);
-        sendPushNotification(token, 'Bienvenid@ \u263A'); 
-        setToken(token)
+        sendPushNotification(token, 'Bienvenid@ \u263A');
+        setToken(token);
       }
     });
 
-    notificationListener.current = Notifications.addNotificationReceivedListener(
-      (notification) => {
-        setNotification(notification);
-      }
-    );
+    notificationListener.current = Notifications.addNotificationReceivedListener((notification) => {
+      setNotification(notification);
+    });
 
-    responseListener.current = Notifications.addNotificationResponseReceivedListener(
-      (response) => {
-        console.log(response);
-      }
-    );
+    responseListener.current = Notifications.addNotificationResponseReceivedListener((response) => {
+      console.log(response);
+    });
 
     return () => {
       if (notificationListener.current && responseListener.current) {
