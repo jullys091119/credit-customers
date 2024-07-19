@@ -8,7 +8,7 @@ import Swipeable from 'react-native-gesture-handler/Swipeable';
 import moment from 'moment';
 import 'moment/locale/es'; // Importar el locale en español
 import { Button } from '@ui-kitten/components';
-import { sendPushNotification } from '../App';
+import { sendPushNotification } from '../notifications';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Reminders = () => {
@@ -47,7 +47,7 @@ const Reminders = () => {
       if(addReminders) {
       const tk_notify = await AsyncStorage.getItem("NOTIFY-TK")
       console.log(tk_notify, "tk notify desde remindders")
-        sendPushNotification(tk_notify,msg)
+        await sendPushNotification(tk_notify,msg)
       }
     } catch (error) {
       console.error('Error adding reminder:', error);
