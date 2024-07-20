@@ -9,7 +9,6 @@ export async function sendPushNotification(expoPushToken, msg) {
   console.log(expoPushToken, msg, "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
 
   const token = await AsyncStorage.getItem('@TOKEN'); // Obtener el token necesario para tu API de backend
-console.log(token, "tokennnn")
   const message = {
     to: expoPushToken,
     sound: Platform.OS === 'android' ? 'default' : 'tono.mp3',
@@ -20,31 +19,7 @@ console.log(token, "tokennnn")
   };
 
   try {
-    // Enviar el token a Drupal o cualquier otro backend
-    const options = {
-      method: 'POST',
-      url: 'https://elalfaylaomega.com/credit-customer/jsonapi/node/notification_push',
-      headers: {
-        Accept: 'application/vnd.api+json',
-        Authorization: 'Authorization: Basic YXBpOmFwaQ==',
-        'Content-Type': 'application/vnd.api+json',
-        'X-CSRF-Token': token,
-      },
-      data: {
-        data: {
-          type: 'node--notification-push',
-          attributes: {
-            title: "Guardando token",
-            field_token: expoPushToken,
-          },
-        },
-      },
-    };
-
-    const response = await axios.request(options);
-    if (response) {
-      console.log('Respuesta de Drupal:', response.data);
-    }
+    
 
     // Enviar notificación a Expo
     const expoResponse = await axios.post('https://exp.host/--/api/v2/push/send', message, {
