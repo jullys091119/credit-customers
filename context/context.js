@@ -307,6 +307,7 @@ const ProviderLogin = ({ children, navigation }) => {
   }
  
   const addReminders = async (msg, date) => {
+    console.log(tk, "token desde context")
     console.log(date, "date")
     const today = moment().utc().format('YYYY-MM-DDTHH:mm:ss[Z]');
     console.log(today)

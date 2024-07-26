@@ -32,7 +32,7 @@
     "expo-dev-client": "~4.0.20",
     "expo-device": "~6.0.2",
     "expo-image-picker": "~15.0.7",
-    "expo-notifications": "~0.28.10",
+    "expo-notifications": "~0.28.12",
     "expo-status-bar": "~1.12.1",
     "expo-updates": "~0.25.20",
     "express": "^4.19.2",

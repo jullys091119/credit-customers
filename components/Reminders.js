@@ -8,18 +8,19 @@ import Swipeable from 'react-native-gesture-handler/Swipeable';
 import moment from 'moment';
 import 'moment/locale/es'; // Importar el locale en español
 import { Button } from '@ui-kitten/components';
-import { sendPushNotification } from '../notifications';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Reminders = () => {
-  const { addReminders, date, msg, setMsg, setVisibleModalReminders, visibleModalReminders, getReminders,deleteReminders,nameUser } = useContext(loginContext);
+  const { addReminders, date, setVisibleModalReminders, visibleModalReminders, getReminders,deleteReminders,nameUser } = useContext(loginContext);
   const [dateModalVisible, setDateModalVisible] = useState(false);
   const [dataReminders, setDataReminders] = useState([]);
   const [keyboardVisible, setKeyboardVisible] = useState(false);
+  const [msg, setMsg] = useState("")
   const showModal = () => setVisibleModalReminders(true);
   const hideModal = () => setVisibleModalReminders(false);
   const showModalDate = () => setDateModalVisible(true);
   const hideModalDate = () => setDateModalVisible(false);
+
   const [nid, setNid] = useState("")
 
   const gettingCurrentReminders = async () => {
@@ -45,14 +46,39 @@ const Reminders = () => {
       setMsg('');
       hideModal();
       if(addReminders) {
-      const tk_notify = await AsyncStorage.getItem("NOTIFY-TK")
-      console.log(tk_notify, "tk notify desde remindders")
-        await sendPushNotification(tk_notify,msg)
+        setNotificationReminders(msg)
       }
     } catch (error) {
       console.error('Error adding reminder:', error);
     }
   };
+
+
+  setNotificationReminders = async (msg) => {
+    const tk = await AsyncStorage.getItem("TK-NOTIFY")
+    const message = {
+      to: tk,
+      sound: 'default',
+      title: 'Abarrotes Juliancito',
+      body: msg,
+      data: { someData: 'goes here' },
+    };
+    
+    fetch('https://exp.host/--/api/v2/push/send', {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(message),
+    })
+      .then(response => response.json())
+      .then(responseData => { 
+      })
+      .catch(error => {
+        console.error(error);
+      });
+  }
 
 
   const handleDeleteReminders =  async(nid) => {
