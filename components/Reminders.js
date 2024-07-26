@@ -8,7 +8,7 @@ import Swipeable from 'react-native-gesture-handler/Swipeable';
 import moment from 'moment';
 import 'moment/locale/es'; // Importar el locale en español
 import { Button } from '@ui-kitten/components';
-import { sendPushNotification } from '../notifications';
+import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Reminders = () => {
@@ -32,12 +32,39 @@ const Reminders = () => {
     }
   };
 
+
   useEffect(() => {
     gettingCurrentReminders();
   }, [nid]);
   
 
   
+  async function sendPushNotification(expoPushToken,msg) {
+    const message = {
+      to: expoPushToken,
+      sound: 'default',
+      title:  "Abarrotes Juliancito",
+      body: msg,
+      data: { someData: 'goes here' },
+    };
+  
+    try {
+      await axios.post('https://exp.host/--/api/v2/push/send', message, {
+        headers: {
+          'host': 'exp.host',
+          accept: 'application/json',
+          "accept-encoding": 'gzip, deflate',
+          "content-type": 'application/json'
+        }
+      });
+      console.log('Notification sent successfully');
+    } catch (error) {
+      console.error('Error sending notification', error);
+    }
+    
+  }
+
+
   const handleAddReminder = async () => {
     try {
       await addReminders(msg, date);

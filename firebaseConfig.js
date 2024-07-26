@@ -9,3 +9,5 @@ admin.initializeApp({
 });
 
 module.exports = admin;
+
+console.log(admin, "admin")
