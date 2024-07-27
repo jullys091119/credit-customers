@@ -6,7 +6,7 @@ import * as FileSystem from 'expo-file-system';
 import { decode, encode } from 'base-64';
 import { Alert } from "react-native";
 import moment from "moment";
-import 'moment/locale/es'; 
+import 'moment/locale/es';
 const loginContext = createContext();
 // Configura el módulo base-64
 if (!global.btoa) {
@@ -21,18 +21,18 @@ const ProviderLogin = ({ children, navigation }) => {
   const [tkLogout, setTokenLogout] = useState("");
   const [tk, setTk] = useState("");
   const [users, setUsers] = useState("");
-  const  [showHome, setShowHome] = useState(false)
+  const [showHome, setShowHome] = useState(false)
   const [user, setUser] = useState("")
   const [pass, setPass] = useState("")
-  const [sales, setSales] = useState([]) 
+  const [sales, setSales] = useState([])
   const [mounted, setMounted] = useState(false)
   const [nameUser, setNameUser] = useState("")
   const [uidUser, setUidUser] = useState("")
   const [image, setImage] = useState("")
   const [smallPerfil, setSmallPerfil] = useState("")
   const [imagenStorage, setImagenStorage] = useState("")
-  const [lastSales, setLastSales] = useState ("")
-  const [roles , setRoles ] = useState("")
+  const [lastSales, setLastSales] = useState("")
+  const [roles, setRoles] = useState("")
   const [isDialogVisible, setIsDialogVisible] = useState(false)
   const [modalVisible, setModalVisible] = useState(false)
   const [userName, setUserName] = useState("")
@@ -41,31 +41,31 @@ const ProviderLogin = ({ children, navigation }) => {
   const [isLoaded, setIsLoaded] = useState(false)
   const [valueSale, setValueSale] = useState("");
   const [date, setDate] = useState(null);
-  const [msg, setMsg]= useState("")
+  const [msg, setMsg] = useState("")
   const [visibleModalReminders, setVisibleModalReminders] = useState(false);
- const [confetti, setConfetti] = useState(false)
- 
+  const [confetti, setConfetti] = useState(false)
+
   const getSalesNoteBook = async (id) => {
     const options = {
       method: 'GET',
-      url: 'https://elalfaylaomega.com/credit-customer/jsonapi/node/sales_notebook?filter[field_sales_id_user]='+ id,
-    };  
+      url: 'https://elalfaylaomega.com/credit-customer/jsonapi/node/sales_notebook?filter[field_sales_id_user]=' + id,
+    };
     return await axios.request(options).then(function (response) {
-     let totalSales = []
-      response.data.data.forEach((data)=> {
+      let totalSales = []
+      response.data.data.forEach((data) => {
         // console.log(data, "<<<<<<<<<<<<<<<<<<<<<<<<,")
-      const dataSales =  {
-        id: data.id,
-        date: data.attributes.field_sales_date,
-        total: data.attributes.field_sales_total
-      }
-      totalSales.push(dataSales)
-    })
-    return totalSales
+        const dataSales = {
+          id: data.id,
+          date: data.attributes.field_sales_date,
+          total: data.attributes.field_sales_total
+        }
+        totalSales.push(dataSales)
+      })
+      return totalSales
     }).catch(function (error) {
       console.error(error);
     });
-  } 
+  }
 
 
   const getSalesNoteBookHome = async () => {
@@ -73,24 +73,24 @@ const ProviderLogin = ({ children, navigation }) => {
     const options = {
       method: 'GET',
       url: 'https://elalfaylaomega.com/credit-customer/jsonapi/node/sales_notebook?filter[field_sales_id_user]=' + uid,
-    };  
+    };
     return await axios.request(options).then(function (response) {
-     let totalSales = []
-      response.data.data.forEach((data)=> {
-       const dataSales =  {
-        date: data.attributes.field_sales_date,
-        total: data.attributes.field_sales_total
-      }
-      setSales((prevSales) => [...prevSales, dataSales]); // Actualiza el estado de sales
-      setLastSales()
-      totalSales.push(dataSales); // 
-    })
-    return totalSales
+      let totalSales = []
+      response.data.data.forEach((data) => {
+        const dataSales = {
+          date: data.attributes.field_sales_date,
+          total: data.attributes.field_sales_total
+        }
+        setSales((prevSales) => [...prevSales, dataSales]); // Actualiza el estado de sales
+        setLastSales()
+        totalSales.push(dataSales); // 
+      })
+      return totalSales
     }).catch(function (error) {
       console.error(error);
     });
   }
-  
+
   const checkLoginStatus = async () => {
     const token = await AsyncStorage.getItem("@TOKEN");
     const token_logout = await AsyncStorage.getItem("@TOKEN_LOGOUT");
@@ -109,7 +109,7 @@ const ProviderLogin = ({ children, navigation }) => {
       method: "POST",
       url: "https://elalfaylaomega.com/credit-customer/user/login",
       params: { _format: "json" },
-      data: { name: user , pass: pass },
+      data: { name: user, pass: pass },
     };
     try {
       const response = await axios.request(options);
@@ -118,9 +118,9 @@ const ProviderLogin = ({ children, navigation }) => {
       await AsyncStorage.setItem("@TOKEN", response.data.csrf_token);
       await AsyncStorage.setItem("@TOKEN_LOGOUT", response.data.logout_token);
       await AsyncStorage.setItem("@UID", response.data.current_user.uid);
-      await AsyncStorage.setItem('@NAMEUSER',response.data.current_user.name)
+      await AsyncStorage.setItem('@NAMEUSER', response.data.current_user.name)
       try {
-        response.data.current_user!=undefined?await AsyncStorage.setItem("@ROLES", response.data.current_user.roles[1]):undefined
+        response.data.current_user != undefined ? await AsyncStorage.setItem("@ROLES", response.data.current_user.roles[1]) : undefined
         // console.log("rol guardado")
       } catch (error) {
         console.log("No se gurado el rol")
@@ -128,25 +128,25 @@ const ProviderLogin = ({ children, navigation }) => {
       checkLoginStatus()
       return response.status;
     } catch (error) {
-      if(error.request.status==403) {
+      if (error.request.status == 403) {
         return error.request.status
-      } else if(error.request.status ==400) {
+      } else if (error.request.status == 400) {
         return error.request.status
-    }
-  }; 
+      }
+    };
   }
 
   const logout = () => {
     const options = {
-      method: "GET", 
+      method: "GET",
       url: "https://elalfaylaomega.com/credit-customer/user/logout",
       params: { _format: "json", token: tkLogout },
       headers: { "User-Agent": "insomnia/8.6.1" },
-    }; 
+    };
     axios
       .request(options)
       .then(async (response) => {
-        
+
         try {
           await AsyncStorage.removeItem("@NAMEUSER");
           await AsyncStorage.removeItem("@TOKEN");
@@ -160,60 +160,60 @@ const ProviderLogin = ({ children, navigation }) => {
       })
       .catch((error) => {
         console.error("Logout error:", error);
-      });  
-  }; 
- 
+      });
+  };
+
   const getUsers = (letter) => {
     const options = {
       method: 'GET',
       url: 'https://elalfaylaomega.com/credit-customer/jsonapi/user/user',
-      headers: {'User-Agent': 'insomnia/8.6.1', 'Content-Type': 'application/json'}
+      headers: { 'User-Agent': 'insomnia/8.6.1', 'Content-Type': 'application/json' }
     };
     return axios
-    .request(options)
-    .then(async function(response) {
-    
-      const allUsers = [];
-      response.data.data.forEach(users => {
-        // console.log(users.attributes, "usert")
-        if(users.attributes.name !== undefined) {
-          const user =  {
-            name: users.attributes.name,
-            id: users.attributes.drupal_internal__uid,
-            lastName: users.attributes.field_user_lastname
+      .request(options)
+      .then(async function (response) {
+
+        const allUsers = [];
+        response.data.data.forEach(users => {
+          // console.log(users.attributes, "usert")
+          if (users.attributes.name !== undefined) {
+            const user = {
+              name: users.attributes.name,
+              id: users.attributes.drupal_internal__uid,
+              lastName: users.attributes.field_user_lastname
+            }
+            allUsers.push(user)
           }
-          allUsers.push(user)
-        }
-      });
-      const filterUser  = allUsers.filter((user) => { 
-        return user.name.charAt(0).toLowerCase() === letter.toLowerCase()
+        });
+        const filterUser = allUsers.filter((user) => {
+          return user.name.charAt(0).toLowerCase() === letter.toLowerCase()
+        })
+
+        return filterUser
+
+      }).catch(function (error) {
+        console.log(error.config);
       })
-
-      return filterUser
-
-    }).catch(function(error) {
-      console.log(error.config);
-    })
   }
 
   const getCurrentUser = () => {
     const options = {
       method: 'GET',
       url: 'https://elalfaylaomega.com/credit-customer/user/' + uidUser + '?_format=json',
-      params: {_format: 'json'},
-      headers: {'Content-Type': 'application/json', 'X-CSRF-Token': tk}
+      params: { _format: 'json' },
+      headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': tk }
     };
-    
+
     return axios.request(options).then(async function (response) {
-      if(uidUser == response.data.uid[0].value ) {
+      if (uidUser == response.data.uid[0].value) {
         loadProfileImageFromStorage()
       }
-      return response.data.status; 
+      return response.data.status;
     }).catch(function (error) {
-      console.error(error); 
-    });    
-  }    
- 
+      console.error(error);
+    });
+  }
+
 
   const uploadPictureUser = async (base64Data) => {
     url = 'https://elalfaylaomega.com/credit-customer/file/upload/user/user/user_picture';
@@ -224,30 +224,30 @@ const ProviderLogin = ({ children, navigation }) => {
     formData.append('file', {
       uri: 'data:application/octet-stream;base64,' + base64Data,
       type: 'application/octet-stream',
-      name:`raton.jpg`
-    });  
- 
-      // Agrega el encabezado "Content-Disposition" con el nombre de archivo
-      formData.append('Content-Disposition', 'attachment; filename="33.jpg"');
-      // Agrega los encabezados necesarios
-      const headers = {
-        'Content-Type': 'application/octet-stream', // Cambiado a application/octet-stream
-        'X-XSRF-Token': tk,
-        'Authorization': 'Basic Og==',
-        'Content-Disposition':`file; filename="${nameUser}.jpg"`
-      };
-      try {
-        const response = await fetch(url, {
-          method: 'POST',
-          headers,
-          body: binaryData, // Cambiado a binaryData
-        });
-        const responseData = await response.json();
-        setPerfilProfileImages(responseData.uri[0].url)
-        loadProfileImageFromStorage()
-      } catch (error) {
-        console.error(error);
-      }
+      name: `raton.jpg`
+    });
+
+    // Agrega el encabezado "Content-Disposition" con el nombre de archivo
+    formData.append('Content-Disposition', 'attachment; filename="33.jpg"');
+    // Agrega los encabezados necesarios
+    const headers = {
+      'Content-Type': 'application/octet-stream', // Cambiado a application/octet-stream
+      'X-XSRF-Token': tk,
+      'Authorization': 'Basic Og==',
+      'Content-Disposition': `file; filename="${nameUser}.jpg"`
+    };
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers,
+        body: binaryData, // Cambiado a binaryData
+      });
+      const responseData = await response.json();
+      setPerfilProfileImages(responseData.uri[0].url)
+      loadProfileImageFromStorage()
+    } catch (error) {
+      console.error(error);
+    }
   }
 
 
@@ -256,21 +256,21 @@ const ProviderLogin = ({ children, navigation }) => {
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [4, 3],
-      base64: true, 
+      base64: true,
     });
-    if (!result.canceled) {      
+    if (!result.canceled) {
       // Luego, puedes enviar la imageBase64 al servidor en lugar de result.assets[0].uri
       const base64ImageData = result.assets[0].base64
       uploadPictureUser(base64ImageData);
     }
   };
-   
- 
-  const setPerfilProfileImages=async(url)=> {
+
+
+  const setPerfilProfileImages = async (url) => {
     try {
       const key = `@PROFILE_${uidUser}`;
       await AsyncStorage.setItem(key, url)
-    }catch (error) {
+    } catch (error) {
       console.log(error)
     }
   }
@@ -290,28 +290,27 @@ const ProviderLogin = ({ children, navigation }) => {
   const alertErrorsSales = (mnsg) => {
     Alert.alert('Error', mnsg, [
       {
-        text: 'Ok', onPress: ()=> console.log("cancel presed")
+        text: 'Ok', onPress: () => console.log("cancel presed")
       }
     ]
-  )
+    )
   }
 
   const alertPay = async (mnsg) => {
     return new Promise((resolve, reject) => {
-        Alert.alert('Selecciona modo', mnsg, [
-            {
-                text: 'Ok'
-            }   
-        ]);
+      Alert.alert('Selecciona modo', mnsg, [
+        {
+          text: 'Ok'
+        }
+      ]);
     });
   }
- 
+
   const addReminders = async (msg, date) => {
-    console.log(date, "date")
     const today = moment().utc().format('YYYY-MM-DDTHH:mm:ss[Z]');
     console.log(today)
     const formattedDate = moment(date).utc().format(); // Use `.utc()` to get the correct UTC format
-  
+    console.log(tk, "token desde context")
     const options = {
       method: "POST",
       url: "https://elalfaylaomega.com/credit-customer/jsonapi/node/reminders",
@@ -326,16 +325,17 @@ const ProviderLogin = ({ children, navigation }) => {
           type: "node--reminders",
           attributes: {
             title: `Recordatorio de ${nameUser}`,
-            field_reminders_date: date!==null?formattedDate:today,
+            field_reminders_date: date !== null ? formattedDate : today,
             field_reminders: msg,
           },
         },
       },
     };
-  
+
     try {
+      
       const response = await axios.request(options);
-      if(response)  {
+      if (response) {
         setMsg("")
         setVisibleModalReminders(false)
       }
@@ -349,30 +349,30 @@ const ProviderLogin = ({ children, navigation }) => {
     const options = {
       method: 'GET',
       url: 'https://elalfaylaomega.com/credit-customer/jsonapi/node/reminders',
-      headers: {'User-Agent': 'insomnia/8.6.1', 'Content-Type': 'application/json'}
+      headers: { 'User-Agent': 'insomnia/8.6.1', 'Content-Type': 'application/json' }
     };
     return axios
-    .request(options)
-    .then(async function(response) {
-      let currentReminders = []
-      response.data.data.forEach((reminders)=> {
-        const  note = {
-          nid: reminders.attributes.drupal_internal__nid,
-          msg: reminders.attributes.field_reminders,
-          date: reminders.attributes.field_reminders_date
-        }
-        currentReminders.push(note)
+      .request(options)
+      .then(async function (response) {
+        let currentReminders = []
+        response.data.data.forEach((reminders) => {
+          const note = {
+            nid: reminders.attributes.drupal_internal__nid,
+            msg: reminders.attributes.field_reminders,
+            date: reminders.attributes.field_reminders_date
+          }
+          currentReminders.push(note)
+        })
+        return currentReminders
+      }).catch(function (error) {
+        console.log(error.config);
       })
-      return currentReminders
-    }).catch(function(error) {
-      console.log(error.config);
-    })
   }
   const deleteReminders = (nid) => {
     console.log(nid, "nid");
-  
+
     const url = `https://elalfaylaomega.com/credit-customer/node/` + nid;
-  
+
     const options = {
       method: 'DELETE',
       url: url,
@@ -382,10 +382,10 @@ const ProviderLogin = ({ children, navigation }) => {
         "Content-Type": "application/vnd.api+json",
       },
     };
-  
+
     return axios.request(options)
       .then(response => {
-        console.log(response, "Eliminación exitosa");
+        console.log("Eliminación exitosa");
       })
       .catch(error => {
         if (error.response) {
@@ -400,126 +400,107 @@ const ProviderLogin = ({ children, navigation }) => {
         console.log('Configuración de la solicitud:', error.config);
       });
   };
-  
-  async function sendPushNotification(expoPushToken) {
- 
-  const message = {
-    to: expoPushToken,
-    sound: 'default',
-    title: 'Buenos días',
-    body: 'Tarea nueva!',
-    data: { someData: 'goes here' },
-  };
 
-  try {
-    // Enviar el token a Drupal
-    const options = {
-      method: "POST",
-      url: "https://elalfaylaomega.com/credit-customer/jsonapi/node/notification_push",
-      headers: {
-        Accept: "application/vnd.api+json",
-        Authorization: "Authorization: Basic YXBpOmFwaQ==",
-        "Content-Type": "application/vnd.api+json",
-        
-      },
-      data: {
+  const setTokensNotifications = async (expoPushToken,tokens) => {
+    console.log(expoPushToken, "expo push token")
+    try {
+      // Enviar el token a Drupal
+      const options = {
+        method: 'POST',
+        url: 'https://elalfaylaomega.com/credit-customer/jsonapi/node/notification_push',
+        headers: {
+          Accept: 'application/vnd.api+json',
+          Authorization: 'Authorization: Basic YXBpOmFwaQ==',
+          'Content-Type': 'application/vnd.api+json',
+          'X-CSRF-Token': tk,
+        },
         data: {
-          type: "node--reminders",
-          attributes: {
-            title: `Recordatorio`,
-            field_token: expoPushToken
-          
+          data: { 
+            type: 'node--notification-push',
+            attributes: {
+              title: 'tokens guardados',
+              field_token: expoPushToken,
+            },
           },
         },
-      },
-    };
+      };
+      if(tokens.includes(expoPushToken))  {
+      } else  {
+        const response = await axios.request(options);
+        if (response) {
+          console.log(response.data.data);
+        }
+        console.log("Token ingresado a la DB")
 
-    try {
-      const response = await axios.request(options);
-      if(response)  {
-       console.log(response)
       }
     } catch (error) {
-      console.error(error.response.data, "error al ejecutar el listado de recordatorios");
+      console.error('Error al enviar notificación:', error);
     }
-
-    // Enviar notificación a Expo
-    const expoResponse = await axios.post('https://exp.host/--/api/v2/push/send', message, {
-      headers: {
-        Accept: 'application/json',
-        'Accept-encoding': 'gzip, deflate',
-        'Content-Type': 'application/json',
-      },
-    });
-
-    console.log('Notificación enviada a Expo:', expoResponse.data);
-  } catch (error) {
-    console.error('Error al enviar notificación:', error);
   }
-}
 
 
-  
 
-  useEffect(()=> {
-  console.log(users, "users<")
-  },[image])
-  return ( 
-    <loginContext.Provider value={{ login,
-     logout, 
-     tk,
-     checkLoginStatus,
-     loadProfileImageFromStorage,
-     getSalesNoteBook,
-     getSalesNoteBookHome,
-     getCurrentUser,
-     getUsers,
-     pickImagePerfil,
-     setUsers,
-     setMounted,
-     setShowHome,
-     setIsDialogVisible,
-     alertErrorsSales,
-     setTotal,
-     setModalVisible,
-     setUserName,
-     setIdUserSale,
-     setUser,
-     setPass,
-     setValueSale,
-     setTotal,
-     alertPay,
-     addReminders,
-     setDate,
-     setMsg,
-     setConfetti,
-     confetti,
-     setVisibleModalReminders,
-     getReminders,
-     deleteReminders,
-     visibleModalReminders,
-     date,
-     users,
-     user,
-     pass,
-     sales,
-     mounted,
-     nameUser,
-     uidUser,
-     image,
-     smallPerfil,
-     roles,
-     modalVisible,
-     userName,
-     idUserSale,
-     total,
-     valueSale,
-     msg
-     }}>
+
+
+  useEffect(() => {
+  }, [])
+  return (
+    <loginContext.Provider value={{
+      login,
+      logout,
+      tk,
+      checkLoginStatus,
+      loadProfileImageFromStorage,
+      getSalesNoteBook,
+      setTokensNotifications,
+      getSalesNoteBookHome,
+      getCurrentUser,
+      getUsers,
+      pickImagePerfil,
+      setUsers,
+      setMounted,
+      setShowHome,
+      setIsDialogVisible,
+      alertErrorsSales,
+      setTotal,
+      setModalVisible,
+      setUserName,
+      setIdUserSale,
+      setUser,
+      setPass,
+      setValueSale,
+      setTotal,
+      alertPay,
+      addReminders,
+      setDate,
+      setMsg,
+      setConfetti,
+      confetti,
+      setVisibleModalReminders,
+      getReminders,
+      deleteReminders,
+      visibleModalReminders,
+      date,
+      users,
+      user,
+      pass,
+      sales,
+      mounted,
+      nameUser,
+      uidUser,
+      image,
+      smallPerfil,
+      roles,
+      modalVisible,
+      userName,
+      idUserSale,
+      total,
+      valueSale,
+      msg
+    }}>
       {children}
     </loginContext.Provider>
   );
 };
 
 export { ProviderLogin, loginContext };
- 
