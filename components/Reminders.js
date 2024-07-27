@@ -10,38 +10,75 @@ import 'moment/locale/es'; // Importar el locale en español
 import { Button } from '@ui-kitten/components';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Notifications from 'expo-notifications';
+import axios from 'axios';
 
 const Reminders = () => {
-  const { addReminders, date, setVisibleModalReminders, visibleModalReminders, getReminders,deleteReminders,nameUser } = useContext(loginContext);
+  const { addReminders, date, 
+  setVisibleModalReminders, visibleModalReminders,
+  getReminders,deleteReminders,nameUser, setTokensNotifications,tk } = useContext(loginContext);
   const [dateModalVisible, setDateModalVisible] = useState(false);
   const [dataReminders, setDataReminders] = useState([]);
-  const [keyboardVisible, setKeyboardVisible] = useState(false);
+  const [msg, setMsg] = useState("")
   const showModal = () => setVisibleModalReminders(true);
   const hideModal = () => setVisibleModalReminders(false);
   const showModalDate = () => setDateModalVisible(true);
   const hideModalDate = () => setDateModalVisible(false);
-  const [msg, setMsg] = useState("")
+  const [tokens, setTokens] = useState([]);
+
+
   const [nid, setNid] = useState("")
 
-  const gettingCurrentReminders = async () => {
+  const getTokensNotifications = async () => {
+    const options = {
+      method: 'GET',
+      url: 'https://elalfaylaomega.com/credit-customer/jsonapi/node/notification_push',
+      headers: {
+        Authorization: 'Authorization: Basic YXBpOmFwaQ==',
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': tk,
+      },
+    };
+  
+    try {
+      const response = await axios.request(options);
+      const fetchedTokens = response.data.data.map(tk => tk.attributes.field_token);
+      setTokens(fetchedTokens); // Actualiza el estado
+    } catch (error) {
+      if (error.response) {
+        console.log('Error en la respuesta:', error.response.data);
+        console.log('Código de estado:', error.response.status);
+        console.log('Encabezados:', error.response.headers);
+      }
+    }
+  };
+  
+
+
+  const gettingCurrentReminders = async () => {  
     try {
       const data = await getReminders();
       console.log('Fetched reminders:', data);
       setDataReminders(data);
     } catch (error) {
       console.error('Error fetching reminders:', error);
-    }
+    } 
   };
 
   useEffect(() => {
     gettingCurrentReminders();
+    getTokensNotifications()
   }, [nid]);
+
+
+  useEffect(()=> {
+    console.log(tokens, "tokens") 
+  },[tokens])
   
   async function schedulePushNotification(msg) {
     await Notifications.scheduleNotificationAsync({
       content: {
         title: "Abarrotes Juliancito! 📬",
-        body: msg,
+        body: msg,     
         data: { data: 'goes here', test: { test1: 'more data' } },
       },
       trigger: { seconds: 2 },
@@ -50,15 +87,14 @@ const Reminders = () => {
   
   const handleAddReminder = async () => {
     try {
-      await addReminders(msg, date);
-      await gettingCurrentReminders(); // Refresca la lista después de agregar
-      setMsg('');
-      hideModal();
-      if(addReminders) {
       const tk_notify = await AsyncStorage.getItem("NOTIFY-TK")
       console.log(tk_notify, "tk notify desde remindders")
-        schedulePushNotification(msg)
-      }
+      await addReminders(msg, date, tokens, tk_notify);
+      await gettingCurrentReminders(); // Refresca la lista después de agregar
+      setTokensNotifications(tk_notify, tokens)
+      schedulePushNotification(msg)
+      setMsg('');
+      hideModal();
     } catch (error) {
       console.error('Error adding reminder:', error);
     }
