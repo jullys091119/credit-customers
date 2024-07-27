@@ -8,11 +8,11 @@ import Swipeable from 'react-native-gesture-handler/Swipeable';
 import moment from 'moment';
 import 'moment/locale/es'; // Importar el locale en español
 import { Button } from '@ui-kitten/components';
-import { sendPushNotification } from '../App';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Notifications from 'expo-notifications';
 
 const Reminders = () => {
-  const { addReminders, date, msg, setMsg, setVisibleModalReminders, visibleModalReminders, getReminders,deleteReminders,nameUser } = useContext(loginContext);
+  const { addReminders, date, setVisibleModalReminders, visibleModalReminders, getReminders,deleteReminders,nameUser } = useContext(loginContext);
   const [dateModalVisible, setDateModalVisible] = useState(false);
   const [dataReminders, setDataReminders] = useState([]);
   const [keyboardVisible, setKeyboardVisible] = useState(false);
@@ -20,6 +20,7 @@ const Reminders = () => {
   const hideModal = () => setVisibleModalReminders(false);
   const showModalDate = () => setDateModalVisible(true);
   const hideModalDate = () => setDateModalVisible(false);
+  const [msg, setMsg] = useState("")
   const [nid, setNid] = useState("")
 
   const gettingCurrentReminders = async () => {
@@ -36,7 +37,16 @@ const Reminders = () => {
     gettingCurrentReminders();
   }, [nid]);
   
-
+  async function schedulePushNotification(msg) {
+    await Notifications.scheduleNotificationAsync({
+      content: {
+        title: "Abarrotes Juliancito! 📬",
+        body: msg,
+        data: { data: 'goes here', test: { test1: 'more data' } },
+      },
+      trigger: { seconds: 2 },
+    });
+  }
   
   const handleAddReminder = async () => {
     try {
@@ -47,7 +57,7 @@ const Reminders = () => {
       if(addReminders) {
       const tk_notify = await AsyncStorage.getItem("NOTIFY-TK")
       console.log(tk_notify, "tk notify desde remindders")
-        sendPushNotification(tk_notify,msg)
+        schedulePushNotification(msg)
       }
     } catch (error) {
       console.error('Error adding reminder:', error);
