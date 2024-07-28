@@ -32,12 +32,12 @@ export default function App() {
   useEffect(() => {
     // Configurar listeners
     notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
-      console.log("Notificación recibida", notification);
+      // console.log("Notificación recibida", notification);
       setNotification(notification);
     });
 
     responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
-      console.log("Notificación respuesta", response);
+      // console.log("Notificación respuesta", response);
       redirect(response.notification)
     });
 
@@ -56,6 +56,7 @@ export default function App() {
     // Fetch expo push token
     registerForPushNotificationsAsync().then((token) => {
       setExpoPushToken(token);
+      AsyncStorage.setItem("NOTIFY-TK", token)
     });
   }, []);
 

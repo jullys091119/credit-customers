@@ -308,9 +308,9 @@ const ProviderLogin = ({ children, navigation }) => {
 
   const addReminders = async (msg, date) => {
     const today = moment().utc().format('YYYY-MM-DDTHH:mm:ss[Z]');
-    console.log(today)
+   
     const formattedDate = moment(date).utc().format(); // Use `.utc()` to get the correct UTC format
-    console.log(tk, "token desde context")
+
     const options = {
       method: "POST",
       url: "https://elalfaylaomega.com/credit-customer/jsonapi/node/reminders",
@@ -369,7 +369,7 @@ const ProviderLogin = ({ children, navigation }) => {
       })
   }
   const deleteReminders = (nid) => {
-    console.log(nid, "nid");
+    
 
     const url = `https://elalfaylaomega.com/credit-customer/node/` + nid;
 
@@ -401,8 +401,8 @@ const ProviderLogin = ({ children, navigation }) => {
       });
   };
 
-  const setTokensNotifications = async (expoPushToken,tokens) => {
-    console.log(expoPushToken, "expo push token")
+  const setTokensNotifications = async (expoPushToken) => {
+   
     try {
       // Enviar el token a Drupal
       const options = {
@@ -424,15 +424,18 @@ const ProviderLogin = ({ children, navigation }) => {
           },
         },
       };
-      if(tokens.includes(expoPushToken))  {
-      } else  {
-        const response = await axios.request(options);
-        if (response) {
-          console.log(response.data.data);
+     
+        try {
+          const response = await axios.request(options);
+          if (response) {
+          }
+        } catch (error) {
+          console.error("Error al hacer la solicitud:", error);
         }
-        console.log("Token ingresado a la DB")
-
-      }
+      
+      
+       
+     
     } catch (error) {
       console.error('Error al enviar notificación:', error);
     }
