@@ -24,6 +24,7 @@ const Reminders = () => {
   const showModalDate = () => setDateModalVisible(true);
   const hideModalDate = () => setDateModalVisible(false);
   const [tokens, setTokens] = useState([]);
+  const [tkLoaded, setTkLoaded] = useState(false)
 
 
   const [nid, setNid] = useState("")
@@ -42,7 +43,10 @@ const Reminders = () => {
     try {
       const response = await axios.request(options);
       const fetchedTokens = response.data.data.map(tk => tk.attributes.field_token);
+    
       setTokens(fetchedTokens); // Actualiza el estado
+      
+      
     } catch (error) {
       if (error.response) {
         console.log('Error en la respuesta:', error.response.data);
@@ -57,7 +61,7 @@ const Reminders = () => {
   const gettingCurrentReminders = async () => {  
     try {
       const data = await getReminders();
-      console.log('Fetched reminders:', data);
+      // console.log('Fetched reminders:', data);
       setDataReminders(data);
     } catch (error) {
       console.error('Error fetching reminders:', error);
@@ -66,13 +70,10 @@ const Reminders = () => {
 
   useEffect(() => {
     gettingCurrentReminders();
-    getTokensNotifications()
-  }, [nid]);
+  }, [nid,tkLoaded,tokens]);
 
-
-  useEffect(()=> {
-    console.log(tokens, "tokens") 
-  },[tokens])
+ 
+    
   
   async function schedulePushNotification(msg) {
     await Notifications.scheduleNotificationAsync({
@@ -88,11 +89,16 @@ const Reminders = () => {
   const handleAddReminder = async () => {
     try {
       const tk_notify = await AsyncStorage.getItem("NOTIFY-TK")
-      console.log(tk_notify, "tk notify desde remindders")
       await addReminders(msg, date, tokens, tk_notify);
       await gettingCurrentReminders(); // Refresca la lista después de agregar
-      setTokensNotifications(tk_notify, tokens)
+      if(tokens.includes(tk_notify)) {
+      return
+      } else {
+        await setTokensNotifications(tk_notify, tokens)
+        setTkLoaded(true)
+      }
       schedulePushNotification(msg)
+      getTokensNotifications()
       setMsg('');
       hideModal();
     } catch (error) {
