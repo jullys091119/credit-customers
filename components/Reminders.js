@@ -72,7 +72,10 @@ const Reminders = () => {
   }, [nid, tkLoaded, tokens]);
 
 
+
+
   async function schedulePushNotification(msg, data) {
+
     const notifications = data.map(token => ({
       to: token,
       sound: 'default',
@@ -103,30 +106,35 @@ const Reminders = () => {
 
   const handleAddReminder = async () => {
     try {
-      // 1. Obtener el token de notificación del dispositivo actual
       const tk_notify = await AsyncStorage.getItem("NOTIFY-TK");
-      
-      // 2. Agregar el recordatorio
       await addReminders(msg, date);
+      await gettingCurrentReminders(); // Refresca la lista después de agregar
+      
+      // Obtener los tokens actuales
+      let tokens = await getTokensNotifications();
   
-      // 3. Refrescar la lista de recordatorios
-      await gettingCurrentReminders();
-  
-      // 4. Obtener los tokens actuales
-      let data = await getTokensNotifications();
-  
-      // 5. Verificar si el token ya está en la lista
-      if (!data.includes(tk_notify)) {
-        // 6. Actualizar los tokens si es necesario
+      // Asegurarse de que `tk_notify` no esté en la lista de tokens
+      if (!tokens.includes(tk_notify)) {
+        // Agregar el token a la lista si no está presente
         await setTokensNotifications(tk_notify);
-        data = [...data, tk_notify]; // Actualizar la lista local para incluir el nuevo token
+        tokens.push(tk_notify); // Añadir el token del dispositivo actual a la lista local
       }
   
-      // 7. Excluir el token actual de la lista de destinatarios
-      const tokensToNotify = data.filter(token => token !== tk_notify);
+      // Filtrar el token actual de la lista de destinatarios
+      const tokensToNotify = tokens.filter(token => token !== tk_notify);
   
-      // 8. Programar la notificación sin incluir el token actual
-      await schedulePushNotification(msg, tokensToNotify);
+      // Verificar si hay tokens válidos para enviar
+      if (tokensToNotify.length === 0) {
+        // Si no hay tokens para notificar, usar el token actual si está disponible
+        if (tokens.length > 0) {
+          await schedulePushNotification(msg, tokens);
+        } else {
+          console.error('No hay tokens válidos para enviar notificaciones.');
+        }
+      } else {
+        // Programar la notificación sin incluir el token actual
+        await schedulePushNotification(msg, tokensToNotify);
+      }
   
       // Limpiar el mensaje y ocultar el modal
       setMsg('');
