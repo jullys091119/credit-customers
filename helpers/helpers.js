@@ -294,7 +294,7 @@ const ListAccessoriesShowcase = ({ navigation }) => {
 
             </View>
             <View style={{ width: 290, marginTop: 15, alignSelf: "center" }}>
-              <Button mode="contained" style={{ backgroundColor: "#0093CE", borderWidth: 0 }} onPress={() => { addSalesCustomer() }}>Enviar</Button>
+              {valueSale !== "" && <Button mode="contained" style={{ backgroundColor: "#0093CE", borderWidth: 0 }} onPress={() => { addSalesCustomer() }}>Enviar</Button>}
             </View>
           </Dialog.Content>
         </Dialog>
