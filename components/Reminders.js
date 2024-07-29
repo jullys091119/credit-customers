@@ -72,10 +72,9 @@ const Reminders = () => {
   }, [nid, tkLoaded, tokens]);
 
 
-
-
+  
   async function schedulePushNotification(msg, data) {
-
+    console.log(data, "data")
     const notifications = data.map(token => ({
       to: token,
       sound: 'default',
@@ -83,8 +82,9 @@ const Reminders = () => {
       body: msg,
       data: { data: 'goes here', test: { test1: 'more data' } },
     }));
-
-
+  
+    console.log(notifications, "notificacion")
+  
     // Configura la solicitud
     const config = {
       headers: {
@@ -94,15 +94,31 @@ const Reminders = () => {
         'content-type': 'application/json',
       },
     }
-
+  
     try {
       // Envía la solicitud POST
       const response = await axios.post('https://exp.host/--/api/v2/push/send', notifications, config);
       console.log('Notificaciones enviadas exitosamente:', response.data);
+  
+      // Verificar si hay errores en las respuestas individuales
+      if (response.data.errors) {
+        response.data.errors.forEach(error => {
+          console.error('Error en notificación:', error);
+        });
+      }
+      
+      // Verificar resultados de cada notificación
+      response.data.data.forEach((result, index) => {
+        if (result.status !== 'ok') {
+          console.error(`Error en la notificación al token ${data[index]}:`, result.message);
+        }
+      });
+  
     } catch (error) {
       console.error('Error al enviar notificaciones:', error.response ? error.response.data : error.message);
     }
   }
+  
   const handleAddReminder = async () => {
     try {
       const tk_notify = await AsyncStorage.getItem("NOTIFY-TK");
@@ -149,6 +165,7 @@ const Reminders = () => {
       console.error('Error adding reminder:', error);
     }
   };
+  
 
 
   const handleDeleteReminders = async (nid) => {
