@@ -44,6 +44,7 @@ const ProviderLogin = ({ children, navigation }) => {
   const [msg, setMsg] = useState("")
   const [visibleModalReminders, setVisibleModalReminders] = useState(false);
   const [confetti, setConfetti] = useState(false)
+  const [dataToken, setDataToken] = useState("")
 
   const getSalesNoteBook = async (id) => {
     const options = {
@@ -402,6 +403,7 @@ const ProviderLogin = ({ children, navigation }) => {
   };
 
   const setTokensNotifications = async (expoPushToken) => {
+    console.log(expoPushToken, "data context")
    
     try {
       // Enviar el token a Drupal
@@ -446,7 +448,7 @@ const ProviderLogin = ({ children, navigation }) => {
 
 
   useEffect(() => {
-  }, [])
+  }, [dataToken])
   return (
     <loginContext.Provider value={{
       login,
@@ -478,6 +480,8 @@ const ProviderLogin = ({ children, navigation }) => {
       setDate,
       setMsg,
       setConfetti,
+      setDataToken,
+      dataToken,
       confetti,
       setVisibleModalReminders,
       getReminders,
