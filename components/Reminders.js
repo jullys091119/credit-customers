@@ -1,5 +1,5 @@
 import React, { useState, useContext, useEffect } from 'react';
-import { View, StyleSheet, Text, FlatList, ScrollView,Keyboard, KeyboardEvent, KeyboardEventListener  } from 'react-native';
+import { View, StyleSheet, Text, FlatList, ScrollView, Keyboard, KeyboardEvent, KeyboardEventListener } from 'react-native';
 import { loginContext } from '../context/context';
 import { FAB, Provider as PaperProvider, Portal, Modal, Icon, TextInput } from 'react-native-paper';
 import { TouchableOpacity, TouchableWithoutFeedback } from 'react-native-gesture-handler';
@@ -13,9 +13,9 @@ import * as Notifications from 'expo-notifications';
 import axios from 'axios';
 
 const Reminders = () => {
-  const { addReminders, date, 
-  setVisibleModalReminders, visibleModalReminders,
-  getReminders,deleteReminders,nameUser, setTokensNotifications,tk } = useContext(loginContext);
+  const { addReminders, date,
+    setVisibleModalReminders, visibleModalReminders,
+    getReminders, deleteReminders, nameUser, setTokensNotifications, tk, setDataToken,dataToken } = useContext(loginContext);
   const [dateModalVisible, setDateModalVisible] = useState(false);
   const [dataReminders, setDataReminders] = useState([]);
   const [msg, setMsg] = useState("")
@@ -39,14 +39,13 @@ const Reminders = () => {
         'X-CSRF-Token': tk,
       },
     };
-  
+
     try {
       const response = await axios.request(options);
       const fetchedTokens = response.data.data.map(tk => tk.attributes.field_token);
-    
-      setTokens(fetchedTokens); // Actualiza el estado
-      
-      
+      return fetchedTokens
+
+
     } catch (error) {
       if (error.response) {
         console.log('Error en la respuesta:', error.response.data);
@@ -55,74 +54,106 @@ const Reminders = () => {
       }
     }
   };
-  
 
 
-  const gettingCurrentReminders = async () => {  
+
+  const gettingCurrentReminders = async () => {
     try {
       const data = await getReminders();
       // console.log('Fetched reminders:', data);
       setDataReminders(data);
     } catch (error) {
       console.error('Error fetching reminders:', error);
-    } 
+    }
   };
 
   useEffect(() => {
     gettingCurrentReminders();
-  }, [nid,tkLoaded,tokens]);
+  }, [nid, tkLoaded, tokens]);
 
- 
-    
-  
-  async function schedulePushNotification(msg) {
-    await Notifications.scheduleNotificationAsync({
-      content: {
-        title: "Abarrotes Juliancito! 📬",
-        body: msg,     
-        data: { data: 'goes here', test: { test1: 'more data' } },
+
+  async function schedulePushNotification(msg, data) {
+    const notifications = data.map(token => ({
+      to: token,
+      sound: 'default',
+      title: 'Abarrotes Juliancito! 📬',
+      body: msg,
+      data: { data: 'goes here', test: { test1: 'more data' } },
+    }));
+
+
+    // Configura la solicitud
+    const config = {
+      headers: {
+        'host': 'exp.host',
+        'accept': 'application/json',
+        'accept-encoding': 'gzip, deflate',
+        'content-type': 'application/json',
       },
-      trigger: { seconds: 2 },
-    });
+    }
+
+    try {
+      // Envía la solicitud POST
+      const response = await axios.post('https://exp.host/--/api/v2/push/send', notifications, config);
+      console.log('Notificaciones enviadas exitosamente:', response.data);
+    } catch (error) {
+      console.error('Error al enviar notificaciones:', error.response ? error.response.data : error.message);
+    }
   }
-  
+
   const handleAddReminder = async () => {
     try {
-      const tk_notify = await AsyncStorage.getItem("NOTIFY-TK")
-      await addReminders(msg, date, tokens, tk_notify);
-      await gettingCurrentReminders(); // Refresca la lista después de agregar
-      if(tokens.includes(tk_notify)) {
-      return
-      } else {
-        await setTokensNotifications(tk_notify, tokens)
-        setTkLoaded(true)
+      // 1. Obtener el token de notificación del dispositivo actual
+      const tk_notify = await AsyncStorage.getItem("NOTIFY-TK");
+      
+      // 2. Agregar el recordatorio
+      await addReminders(msg, date);
+  
+      // 3. Refrescar la lista de recordatorios
+      await gettingCurrentReminders();
+  
+      // 4. Obtener los tokens actuales
+      let data = await getTokensNotifications();
+  
+      // 5. Verificar si el token ya está en la lista
+      if (!data.includes(tk_notify)) {
+        // 6. Actualizar los tokens si es necesario
+        await setTokensNotifications(tk_notify);
+        data = [...data, tk_notify]; // Actualizar la lista local para incluir el nuevo token
       }
-      schedulePushNotification(msg)
-      getTokensNotifications()
+  
+      // 7. Excluir el token actual de la lista de destinatarios
+      const tokensToNotify = data.filter(token => token !== tk_notify);
+  
+      // 8. Programar la notificación sin incluir el token actual
+      await schedulePushNotification(msg, tokensToNotify);
+  
+      // Limpiar el mensaje y ocultar el modal
       setMsg('');
       hideModal();
+  
     } catch (error) {
       console.error('Error adding reminder:', error);
     }
   };
+  
 
-
-  const handleDeleteReminders =  async(nid) => {
+  const handleDeleteReminders = async (nid) => {
     setNid(nid)
     await deleteReminders(nid)
   }
 
   const renderItem = ({ item, index }) => (
     <Swipeable
-    renderRightActions={() => (
-      <TouchableOpacity style={styles.deleteButton} onPress={() => handleDeleteReminders(item.nid)}>
+      renderRightActions={() => (
+        <TouchableOpacity style={styles.deleteButton} onPress={() => handleDeleteReminders(item.nid)}>
           <Text style={styles.deleteText}>Eliminar</Text>
         </TouchableOpacity>
       )}
     >
       <View style={styles.itemContainer}>
         <View style={styles.indexPosition}>
-          <Text style={{color: "white"}}>{index + 1}</Text>
+          <Text style={{ color: "white" }}>{index + 1}</Text>
         </View>
         <Text style={styles.itemText}>
           {item.msg || "No Message"}
@@ -138,53 +169,53 @@ const Reminders = () => {
 
   return (
     <PaperProvider>
-        <View style={styles.header}>
-          <Text style={styles.headerTxt}>Recordatorios</Text>
-        </View>
-        <FlatList
-          data={dataReminders}
-          renderItem={renderItem}
-          keyExtractor={(item, index) => index.toString()}
-          contentContainerStyle={styles.listContainer}
-        />
-        <FAB
-          icon="plus"
-          style={styles.fab}
-          onPress={showModal}
-          color="white"
-        />
-        <Portal>
-          <Modal visible={dateModalVisible} onDismiss={hideModalDate} contentContainerStyle={styles.modalContainer}>
-            <CalendarCustomDayShowcase />
-            <Button onPress={hideModalDate} style={{marginVertical:40}}>Cerrar</Button>
-          </Modal>
-        </Portal>
-        <Portal>
-          <Modal visible={visibleModalReminders} onDismiss={hideModal} contentContainerStyle={styles.modalContainerDate}>
-            <View style={styles.headerModal}>
-              <Text style={styles.txtReminders}>Crear Recordatorio</Text>
-              <View style={styles.bodyDate}>
-                  <TouchableWithoutFeedback onPress={showModalDate}>
-                    <Icon source="calendar" color="#0093CE" size={37} />
-                  </TouchableWithoutFeedback>
-                </View>
+      <View style={styles.header}>
+        <Text style={styles.headerTxt}>Recordatorios</Text>
+      </View>
+      <FlatList
+        data={dataReminders}
+        renderItem={renderItem}
+        keyExtractor={(item, index) => index.toString()}
+        contentContainerStyle={styles.listContainer}
+      />
+      <FAB
+        icon="plus"
+        style={styles.fab}
+        onPress={showModal}
+        color="white"
+      />
+      <Portal>
+        <Modal visible={dateModalVisible} onDismiss={hideModalDate} contentContainerStyle={styles.modalContainer}>
+          <CalendarCustomDayShowcase />
+          <Button onPress={hideModalDate} style={{ marginVertical: 40 }}>Cerrar</Button>
+        </Modal>
+      </Portal>
+      <Portal>
+        <Modal visible={visibleModalReminders} onDismiss={hideModal} contentContainerStyle={styles.modalContainerDate}>
+          <View style={styles.headerModal}>
+            <Text style={styles.txtReminders}>Crear Recordatorio</Text>
+            <View style={styles.bodyDate}>
+              <TouchableWithoutFeedback onPress={showModalDate}>
+                <Icon source="calendar" color="#0093CE" size={37} />
+              </TouchableWithoutFeedback>
             </View>
-            <View style={styles.body}>
-              <View style={styles.form}>
-                <Text style={styles.formTxt}>Recordatorio</Text>
-                <TextInput
-                  mode="outlined"
-                  multiline={true}
-                  value={msg}
-                  style={{ padding: 10, height: 180 }}
-                  onChangeText={(txt) => setMsg(txt)}
-                />
+          </View>
+          <View style={styles.body}>
+            <View style={styles.form}>
+              <Text style={styles.formTxt}>Recordatorio</Text>
+              <TextInput
+                mode="outlined"
+                multiline={true}
+                value={msg}
+                style={{ padding: 10, height: 180 }}
+                onChangeText={(txt) => setMsg(txt)}
+              />
 
-                <Button  onPress={handleAddReminder} style={{backgroundColor:"#0093CE", borderWidth:0, marginVertical: 15}}>Crear</Button>
-              </View>
+              <Button onPress={handleAddReminder} style={{ backgroundColor: "#0093CE", borderWidth: 0, marginVertical: 15 }}>Crear</Button>
             </View>
-          </Modal>
-        </Portal>
+          </View>
+        </Modal>
+      </Portal>
     </PaperProvider>
   );
 };
@@ -222,7 +253,7 @@ const styles = StyleSheet.create({
     padding: 20,
     margin: 20,
     borderRadius: 10,
-    height: 500,  
+    height: 500,
   },
   modalContainerDate: {
     backgroundColor: 'white',
@@ -232,7 +263,7 @@ const styles = StyleSheet.create({
     padding: 20,
     margin: 20,
     borderRadius: 10,
-    height: 400,  
+    height: 400,
     width: 300,
     margin: "auto"
   },
@@ -260,14 +291,14 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginVertical: 10,
   },
-  
+
   bodyDate: {
     height: 60,
     paddingVertical: 10,
     display: 'flex',
     flexDirection: 'row',
     alignItems: 'center',
-    marginRight:10,
+    marginRight: 10,
   },
 
   listContainer: {
@@ -293,7 +324,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#0093CE',
     fontWeight: "500",
-    marginVertical:10,
+    marginVertical: 10,
 
   },
 
