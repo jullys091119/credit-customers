@@ -71,11 +71,7 @@ const Reminders = () => {
     gettingCurrentReminders();
   }, [nid, tkLoaded, tokens]);
 
-
-
-
-  async function schedulePushNotification(msg, data) {
-
+  const schedulePushNotification = async (msg, data) => {
     const notifications = data.map(token => ({
       to: token,
       sound: 'default',
@@ -83,59 +79,41 @@ const Reminders = () => {
       body: msg,
       data: { data: 'goes here', test: { test1: 'more data' } },
     }));
-
-
-    // Configura la solicitud
-    const config = {
-      headers: {
-        'host': 'exp.host',
-        'accept': 'application/json',
-        'accept-encoding': 'gzip, deflate',
-        'content-type': 'application/json',
-      },
-    }
-
+  
     try {
-      // Envía la solicitud POST
-      const response = await axios.post('https://exp.host/--/api/v2/push/send', notifications, config);
-      console.log('Notificaciones enviadas exitosamente:', response.data);
+      const responses = await Promise.all(
+        notifications.map(notification => 
+          axios.post('https://exp.host/--/api/v2/push/send', notification, {
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          })
+        )
+      );
+  
+      responses.forEach(response => {
+        console.log('Notificación enviada exitosamente:', response.data);
+      });
     } catch (error) {
       console.error('Error al enviar notificaciones:', error.response ? error.response.data : error.message);
     }
-  }
-
+  };
+  
+  
   const handleAddReminder = async () => {
     try {
       const tk_notify = await AsyncStorage.getItem("NOTIFY-TK");
       await addReminders(msg, date);
       await gettingCurrentReminders(); // Refresca la lista después de agregar
-      
       // Obtener los tokens actuales
       let tokens = await getTokensNotifications();
-  
       // Asegurarse de que `tk_notify` no esté en la lista de tokens
       if (!tokens.includes(tk_notify)) {
         // Agregar el token a la lista si no está presente
         await setTokensNotifications(tk_notify);
         tokens.push(tk_notify); // Añadir el token del dispositivo actual a la lista local
       }
-  
-      // Filtrar el token actual de la lista de destinatarios
-      const tokensToNotify = tokens.filter(token => token !== tk_notify);
-  
-      // Verificar si hay tokens válidos para enviar
-      if (tokensToNotify.length === 0) {
-        // Si no hay tokens para notificar, usar el token actual si está disponible
-        if (tokens.length > 0) {
-          await schedulePushNotification(msg, tokens);
-        } else {
-          console.error('No hay tokens válidos para enviar notificaciones.');
-        }
-      } else {
-        // Programar la notificación sin incluir el token actual
-        await schedulePushNotification(msg, tokensToNotify);
-      }
-  
+      await schedulePushNotification(msg, tokens);
       // Limpiar el mensaje y ocultar el modal
       setMsg('');
       hideModal();
