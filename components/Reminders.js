@@ -72,9 +72,10 @@ const Reminders = () => {
   }, [nid, tkLoaded, tokens]);
 
 
-  
+
+
   async function schedulePushNotification(msg, data) {
-    console.log(data, "data")
+
     const notifications = data.map(token => ({
       to: token,
       sound: 'default',
@@ -82,9 +83,8 @@ const Reminders = () => {
       body: msg,
       data: { data: 'goes here', test: { test1: 'more data' } },
     }));
-  
-    console.log(notifications, "notificacion")
-  
+
+
     // Configura la solicitud
     const config = {
       headers: {
@@ -94,46 +94,25 @@ const Reminders = () => {
         'content-type': 'application/json',
       },
     }
-  
+
     try {
       // Envía la solicitud POST
       const response = await axios.post('https://exp.host/--/api/v2/push/send', notifications, config);
       console.log('Notificaciones enviadas exitosamente:', response.data);
-  
-      // Verificar si hay errores en las respuestas individuales
-      if (response.data.errors) {
-        response.data.errors.forEach(error => {
-          console.error('Error en notificación:', error);
-        });
-      }
-      
-      // Verificar resultados de cada notificación
-      response.data.data.forEach((result, index) => {
-        if (result.status !== 'ok') {
-          console.error(`Error en la notificación al token ${data[index]}:`, result.message);
-        }
-      });
-  
     } catch (error) {
       console.error('Error al enviar notificaciones:', error.response ? error.response.data : error.message);
     }
   }
-  
+
   const handleAddReminder = async () => {
     try {
       const tk_notify = await AsyncStorage.getItem("NOTIFY-TK");
-      
-      if (!tk_notify) {
-        console.error('No se pudo obtener el token de notificación del dispositivo.');
-        return;
-      }
-      
       await addReminders(msg, date);
       await gettingCurrentReminders(); // Refresca la lista después de agregar
-  
+      
       // Obtener los tokens actuales
       let tokens = await getTokensNotifications();
-      
+  
       // Asegurarse de que `tk_notify` no esté en la lista de tokens
       if (!tokens.includes(tk_notify)) {
         // Agregar el token a la lista si no está presente
@@ -166,7 +145,6 @@ const Reminders = () => {
     }
   };
   
-
 
   const handleDeleteReminders = async (nid) => {
     setNid(nid)
