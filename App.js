@@ -8,57 +8,58 @@ import { ProviderLogin } from './context/context';
 import * as eva from '@eva-design/eva';
 import { ApplicationProvider } from '@ui-kitten/components';
 import * as Updates from 'expo-updates';
-import * as Device from 'expo-device';
-import * as Notifications from 'expo-notifications';
-import Constants from 'expo-constants';
-import axios from 'axios';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import messaging from "@react-native-firebase/messaging"
 
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: false,
-    shouldSetBadge: false,
-  }),
-});
 
 
 export default function App() {
-  const [expoPushToken, setExpoPushToken] = useState();
-  const [notification, setNotification] = useState(null); // Inicializar como null
-  const notificationListener = useRef(null);
-  const responseListener = useRef(null);
+ 
+  const requestUserPermission = async () => {
+    const authStatus = await  messaging().requestPermission();
+    const enabled =
+    authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+    authStatus === messaging.AuthorizationStatus.PROVISIONAL;
 
-  useEffect(() => {
-    // Configurar listeners
-    notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
-      // console.log("Notificación recibida", notification);
-      setNotification(notification);
-    });
+    if(enabled) {
+      console.log("Autorizathion status", authStatus)
+    }
+  }
 
-    responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
-      // console.log("Notificación respuesta", response);
-      redirect(response.notification)
-    });
+  useEffect(()=> {
+    if(requestUserPermission()) {
+      messaging().getToken().then((token)=> {
+        console.log(token, "tokeeen")
+      })
+    } else {
+      console.log("Permission not granted", authStatus)
+    }
 
-    // Limpiar listeners al desmontar el componente
-    return () => {
-      if (notificationListener.current) {
-        notificationListener.current.remove();
+    //check ehether an initial notification is available
+    messaging().getInitialNotification().then(async(remoteMessage)=> {
+      if(remoteMessage) {
+        console.log("Notification caused app to open from quit state",remoteMessage.notification)
       }
-      if (responseListener.current) {
-        responseListener.current.remove();
-      }
-    };
-  }, []); // El array vacío asegura que este efecto solo se ejecute al montar el componente
+    })  
 
-  useEffect(() => {
-    // Fetch expo push token
-    registerForPushNotificationsAsync().then((token) => {
-      setExpoPushToken(token);
-      AsyncStorage.setItem("NOTIFY-TK", token)
-    });
-  }, []);
+   //Assume a message-notification container a "Type" property in the data payload of the screen
+
+    messaging().onNotificationOpenedApp((remoteMessage)=> {
+      console.log("NOtification caused app to open from background state", remoteMessage.notification)
+    })
+
+
+    messaging().setBackgroundMessageHandler(async(remoteMessage) => {
+      console.log("Message handled in the background!", remoteMessage)
+    })
+
+
+    const unsubscribe =  messaging().onMessage(async(remoteMessage)=> {
+      Alert.alert("A new FCM message arrived", JSON.stringify(remoteMessage))
+    })
+   
+    return unsubscribe
+
+  },[])
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -67,62 +68,14 @@ export default function App() {
         <ProviderLogin>
           <PaperProvider>
             <MyStack />
+            
           </PaperProvider>
         </ProviderLogin>
       </ApplicationProvider>
     </GestureHandlerRootView>
   );
 
-async function registerForPushNotificationsAsync() {
-  let token;
 
-  if (Platform.OS === 'android') {
-    await Notifications.setNotificationChannelAsync('default', {
-      name: 'default',
-      importance: Notifications.AndroidImportance.MAX,
-      vibrationPattern: [0, 250, 250, 250],
-      lightColor: '#FF231F7C',
-    });
-  }
-
-  if (Device.isDevice) {
-    const { status: existingStatus } = await Notifications.getPermissionsAsync();
-    let finalStatus = existingStatus;
-    if (existingStatus !== 'granted') {
-      const { status } = await Notifications.requestPermissionsAsync();
-      finalStatus = status;
-    }
-    if (finalStatus !== 'granted') {
-      alert('Failed to get push token for push notification!');
-      return;
-    }
-
-    try {
-      const projectId =
-        Constants?.expoConfig?.extra?.eas?.projectId ?? Constants?.easConfig?.projectId;
-      if (!projectId) {
-        throw new Error('Project ID not found');
-      }
-
-      if(!Constants.expoConfig?.extra?.eas.projectId) {
-        alert("No ProjectId found in app.json")
-        return;
-      }
-      token = (
-        await Notifications.getExpoPushTokenAsync({
-          projectId: Constants.expoConfig?.extra?.eas.projectId,
-        })
-      ).data;
-      console.log(token);
-    } catch (e) {
-      token = `${e}`;
-    }
-  } else {
-    alert('Must use physical device for Push Notifications');
-  }
-
-  return token;
-}
 }
 
 const styles = StyleSheet.create({
