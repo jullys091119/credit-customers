@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Button, StyleSheet, Platform } from 'react-native';
+import { StyleSheet, Platform, Alert } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { MyStack } from './stacks/stacks';
 import { PaperProvider } from 'react-native-paper';
@@ -7,59 +7,131 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { ProviderLogin } from './context/context';
 import * as eva from '@eva-design/eva';
 import { ApplicationProvider } from '@ui-kitten/components';
-import * as Updates from 'expo-updates';
-import messaging from "@react-native-firebase/messaging"
+import * as Device from 'expo-device';
+import * as Notifications from 'expo-notifications';
+import Constants from 'expo-constants';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
 
-
+// Configura el manejador de notificaciones
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: false,
+    shouldSetBadge: false,
+  }),
+});
 
 export default function App() {
- 
-  const requestUserPermission = async () => {
-    const authStatus = await  messaging().requestPermission();
-    const enabled =
-    authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
-    authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+  const [expoPushToken, setExpoPushToken] = useState();
+  const [notification, setNotification] = useState(null);
+  const notificationListener = useRef(null);
+  const responseListener = useRef(null);
 
-    if(enabled) {
-      console.log("Autorizathion status", authStatus)
+  useEffect(() => {
+    // Configurar listeners
+    notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
+      setNotification(notification);
+    });
+
+    responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
+      // Manejar la respuesta de la notificación
+      redirect(response.notification);
+    });
+
+    // Limpiar listeners al desmontar el componente
+    return () => {
+      notificationListener.current?.remove();
+      responseListener.current?.remove();
+    };
+  }, []);
+
+  useEffect(() => {
+    // Obtener el token de notificación
+    registerForPushNotificationsAsync().then(async token => {
+      setExpoPushToken(token);
+      await AsyncStorage.setItem('NOTIFY-TK', token);
+
+      const previousToken = await AsyncStorage.getItem("NOTIFY-TK");
+      if (previousToken !== token) {
+        updateTokenInBackend(token);
+      }
+    });
+  }, []);
+
+  // Función para actualizar el token en el backend
+  async function updateTokenInBackend(token) {
+    const tk = await AsyncStorage.getItem('@TOKEN');
+    try {
+      const options = {
+        method: 'POST',
+        url: 'https://elalfaylaomega.com/credit-customer/jsonapi/node/notification_push',
+        headers: {
+          Accept: 'application/vnd.api+json',
+          Authorization: 'Authorization: Basic YXBpOmFwaQ==',
+          'Content-Type': 'application/vnd.api+json',
+          'X-CSRF-Token': tk,
+        },
+        data: {
+          data: { 
+            type: 'node--notification-push',
+            attributes: {
+              title: 'tokens guardados',
+              field_token: token,
+            },
+          },
+        },
+      };
+     
+      const response = await axios.request(options);
+      console.log('Token actualizado en el backend:', response.data);
+    } catch (error) {
+      console.error('Error al enviar el token al backend:', error);
     }
   }
 
-  useEffect(()=> {
-    if(requestUserPermission()) {
-      messaging().getToken().then((token)=> {
-        console.log(token, "tokeeen")
-      })
-    } else {
-      console.log("Permission not granted", authStatus)
+  async function registerForPushNotificationsAsync() {
+    let token;
+
+    if (Platform.OS === 'android') {
+      await Notifications.setNotificationChannelAsync('default', {
+        name: 'default',
+        importance: Notifications.AndroidImportance.MAX,
+        vibrationPattern: [0, 250, 250, 250],
+        lightColor: '#FF231F7C',
+      });
     }
 
-    //check ehether an initial notification is available
-    messaging().getInitialNotification().then(async(remoteMessage)=> {
-      if(remoteMessage) {
-        console.log("Notification caused app to open from quit state",remoteMessage.notification)
+    if (Device.isDevice) {
+      const { status: existingStatus } = await Notifications.getPermissionsAsync();
+      let finalStatus = existingStatus;
+      if (existingStatus !== 'granted') {
+        const { status } = await Notifications.requestPermissionsAsync();
+        finalStatus = status;
       }
-    })  
+      if (finalStatus !== 'granted') {
+        alert('Failed to get push token for push notification!');
+        return;
+      }
 
-   //Assume a message-notification container a "Type" property in the data payload of the screen
+      try {
+        const projectId =
+          Constants?.expoConfig?.extra?.eas?.projectId ?? Constants?.easConfig?.projectId;
+        if (!projectId) {
+          throw new Error('Project ID not found');
+        }
 
-    messaging().onNotificationOpenedApp((remoteMessage)=> {
-      console.log("NOtification caused app to open from background state", remoteMessage.notification)
-    })
+        token = (await Notifications.getExpoPushTokenAsync({ projectId })).data;
+        console.log('Expo Push Token:', token);
+      } catch (e) {
+        token = `${e}`;
+      }
+    } else {
+      alert('Must use physical device for Push Notifications');
+    }
 
-
-    messaging().setBackgroundMessageHandler(async(remoteMessage) => {
-      console.log("Message handled in the background!", remoteMessage)
-    })
-
-
-    const unsubscribe =  messaging().onMessage(async(remoteMessage)=> {
-      Alert.alert("A new FCM message arrived", JSON.stringify(remoteMessage))
-    })
-   
-    return unsubscribe
-
-  },[])
+    return token;
+  }
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -68,14 +140,11 @@ export default function App() {
         <ProviderLogin>
           <PaperProvider>
             <MyStack />
-            
           </PaperProvider>
         </ProviderLogin>
       </ApplicationProvider>
     </GestureHandlerRootView>
   );
-
-
 }
 
 const styles = StyleSheet.create({
