@@ -49,12 +49,15 @@ export default function App() {
   useEffect(() => {
     // Obtener el token de notificación
     registerForPushNotificationsAsync().then(async token => {
+      console.log('Nuevo token:', token);
       setExpoPushToken(token);
       await AsyncStorage.setItem('NOTIFY-TK', token);
 
-      const previousToken = await AsyncStorage.getItem("NOTIFY-TK");
+      const previousToken = await AsyncStorage.getItem('NOTIFY-TK');
+      console.log('Token almacenado:', previousToken);
+      
       if (previousToken !== token) {
-        updateTokenInBackend(token);
+        await updateTokenInBackend(token);
       }
     });
   }, []);
@@ -62,6 +65,7 @@ export default function App() {
   // Función para actualizar el token en el backend
   async function updateTokenInBackend(token) {
     const tk = await AsyncStorage.getItem('@TOKEN');
+    console.log('Token del backend:', token); // Añade este log para verificar el token
     try {
       const options = {
         method: 'POST',
@@ -131,6 +135,12 @@ export default function App() {
     }
 
     return token;
+  }
+
+  // Función de redirección o manejo de respuesta
+  function redirect(notification) {
+    // Implementa tu lógica para redirigir o manejar la respuesta
+    console.log('Notificación recibida:', notification);
   }
 
   return (
