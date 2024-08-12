@@ -73,9 +73,8 @@ const Reminders = () => {
 
 
 
-
   async function schedulePushNotification(msg, data) {
-    console.log(data, "data")
+
     const notifications = data.map(token => ({
       to: token,
       sound: 'default',
@@ -107,6 +106,8 @@ const Reminders = () => {
   const handleAddReminder = async () => {
     try {
       const tk_notify = await AsyncStorage.getItem("NOTIFY-TK");
+
+      console.log(tk_notify, "hola")
   
       await addReminders(msg, date);
       await gettingCurrentReminders(); // Refresca la lista después de agregar
