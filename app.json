@@ -11,13 +11,10 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
+    "runtimeVersion": "1.0.0",
     "assetBundlePatterns": [
       "**/*"
     ],
-    "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "com.huerogil.creditcustomers"
-    },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/icon.png",
@@ -33,30 +30,40 @@
       ],
       "googleServicesFile": "./google-services.json"
     },
+    "ios": {
+      "bundleIdentifier": "com.huerogil.creditcustomers"
+    },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "extra": {
       "eas": {
         "projectId": "6e84cd78-fa0d-4f9f-a08a-ef3d6eb22189"
-      }
+      },
+      "oneSignalAppId": "8a0ed2a9-cfa6-44a6-945d-16ee0d47dc0c"
     },
     "plugins": [
+      "@react-native-firebase/app",
       [
         "expo-updates",
         {
           "username": "account-username"
         }
+      ],
+      [
+        "onesignal-expo-plugin",
+        {
+          "mode": "development",
+          "devTeam": "91SW8A37CR"
+        }
       ]
     ],
-    "runtimeVersion": {
-      "policy": "appVersion"
-    },
     "updates": {
       "url": "https://u.expo.dev/6e84cd78-fa0d-4f9f-a08a-ef3d6eb22189",
       "enabled": true,
       "fallbackToCacheTimeout": 0,
       "checkAutomatically": "ON_LOAD"
-    }
+    },
+    "owner": "huerogil"
   }
 }
