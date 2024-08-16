@@ -25,36 +25,8 @@ const Reminders = () => {
   const hideModalDate = () => setDateModalVisible(false);
   const [tokens, setTokens] = useState([]);
   const [tkLoaded, setTkLoaded] = useState(false)
-
-
   const [nid, setNid] = useState("")
-
-  const getTokensNotifications = async () => {
-    const options = {
-      method: 'GET',
-      url: 'https://elalfaylaomega.com/credit-customer/jsonapi/node/notification_push',
-      headers: {
-        Authorization: 'Authorization: Basic YXBpOmFwaQ==',
-        'Content-Type': 'application/json',
-        'X-CSRF-Token': tk,
-      },
-    };
-
-    try {
-      const response = await axios.request(options);
-      const fetchedTokens = response.data.data.map(tk => tk.attributes.field_token);
-      return fetchedTokens
-
-
-    } catch (error) {
-      if (error.response) {
-        console.log('Error en la respuesta:', error.response.data);
-        console.log('Código de estado:', error.response.status);
-        console.log('Encabezados:', error.response.headers);
-      }
-    }
-  };
-
+  const [userIds, setUserIds] = useState([]);
 
 
   const gettingCurrentReminders = async () => {
@@ -72,60 +44,56 @@ const Reminders = () => {
   }, [nid, tkLoaded, tokens]);
 
 
+ const getAllUserNotification = async () => {
+   axios.get(`https://app.nativenotify.com/api/expo/indie/subs/23061/op0fHTEFY2CT43w3D4WvXA`, {
 
-  async function schedulePushNotification(msg, data) {
+   }).then((response)=> {
+     const ids = response.data.map(user=> user.sub_id)
+     setUserIds(ids);
+   }).catch((e)=> {
+    console.log(e, "error")
+   })
+ }
 
-    const notifications = data.map(token => ({
-      to: token,
-      sound: 'default',
-      title: 'Abarrotes Juliancito! 📬',
-      body: msg,
-      data: { data: 'goes here', test: { test1: 'more data' } },
-    }));
+ useEffect(()=> {
+   getAllUserNotification()
+ },[])
 
 
-    // Configura la solicitud
-    const config = {
-      headers: {
-        'host': 'exp.host',
-        'accept': 'application/json',
-        'accept-encoding': 'gzip, deflate',
-        'content-type': 'application/json',
-      },
+ const sendNotification = async (message,date) => {
+  console.log(userIds, "userids")
+  try {
+
+    if(!Array.isArray(userIds) || userIds === 0) {
+      throw new Error('subIds debe ser un array no vacío.');
     }
 
-    try {
-      // Envía la solicitud POST
-      const response = await axios.post('https://exp.host/--/api/v2/push/send', notifications, config);
-      console.log('Notificaciones enviadas exitosamente:', response.data);
-    } catch (error) {
-      console.error('Error al enviar notificaciones:', error.response ? error.response.data : error.message);
-    }
+    await Promise.all(userIds.map(ids => {
+      axios.post('https://app.nativenotify.com/api/indie/notification', {
+        subID: ids,                // ID único del usuario de aplicación
+        appId: 23061,                // ID de tu aplicación en Native Notify
+        appToken: 'op0fHTEFY2CT43w3D4WvXA', // Token de tu aplicación en Native Notify
+        title: `Nuevo recordatorio de Abarrotes Juliancito`,                // Título de la notificación push
+        message: message// Mensaje de la notificación push
+    });
+    console.log('Notification sent successfully');
+      
+    }))
+
+     
+  } catch (error) {
+      console.error('Error sending notification:', error);
   }
+};
 
+  
   const handleAddReminder = async () => {
     try {
-      const tk_notify = await AsyncStorage.getItem("NOTIFY-TK");
-
-      console.log(tk_notify, "hola")
-  
       await addReminders(msg, date);
       await gettingCurrentReminders(); // Refresca la lista después de agregar
-      
-      // Obtener los tokens actuales
-      let tokens = await getTokensNotifications();
-  
-      // Asegurarse de que `tk_notify` no esté en la lista de tokens
-      if (!tokens.includes(tk_notify)) {
-        // Agregar el token a la lista si no está presente
-        await setTokensNotifications(tk_notify);
-        tokens.push(tk_notify); // Añadir el token del dispositivo actual a la lista local
-      }
-      await schedulePushNotification(msg, tokens);
-      
-      // Limpiar el mensaje y ocultar el modal
       setMsg('');
       hideModal();
+      sendNotification(msg,date)
   
     } catch (error) {
       console.error('Error adding reminder:', error);

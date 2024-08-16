@@ -49,13 +49,6 @@
         {
           "username": "account-username"
         }
-      ],
-      [
-        "onesignal-expo-plugin",
-        {
-          "mode": "development",
-          "devTeam": "91SW8A37CR"
-        }
       ]
     ],
     "updates": {
