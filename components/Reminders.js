@@ -69,6 +69,7 @@ const Reminders = () => {
     }
 
     await Promise.all(userIds.map(ids => {
+      console.log(ids, "iids desde el map")
       axios.post('https://app.nativenotify.com/api/indie/notification', {
         subID: ids,                // ID único del usuario de aplicación
         appId: 23061,                // ID de tu aplicación en Native Notify
