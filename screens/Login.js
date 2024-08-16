@@ -60,19 +60,18 @@ const Login = ({navigation}) => {
     const UID = await AsyncStorage.getItem("@UID")
     console.log(UID, "UID")
     // Native Notify Indie Push Registration Code
-    registerIndieID(UID, 23098, 'uJ0T9h4SS9RzMAw99KSbhU');
+    registerIndieID(UID, 23100, 'SfypJls2IdMDc8uhwy7dDJ');
     // End of Native Notify Code
   }
 
-  
   const sendNotification = async (message) => {
     const UID = await AsyncStorage.getItem("@UID")
     const name = await AsyncStorage.getItem('@NAMEUSER')
     try {
         await axios.post('https://app.nativenotify.com/api/indie/notification', {
             subID: UID,                // ID único del usuario de aplicación
-            appId: 23098,                // ID de tu aplicación en Native Notify
-            appToken: 'uJ0T9h4SS9RzMAw99KSbhU', // Token de tu aplicación en Native Notify
+            appId: 23100,                // ID de tu aplicación en Native Notify
+            appToken: 'SfypJls2IdMDc8uhwy7dDJ', // Token de tu aplicación en Native Notify
             title: `Bienvenid@ ${name}`,                // Título de la notificación push
             message: message             // Mensaje de la notificación push
         });

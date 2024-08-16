@@ -45,7 +45,7 @@ const Reminders = () => {
 
 
  const getAllUserNotification = async () => {
-   axios.get(`https://app.nativenotify.com/api/expo/indie/subs/23061/op0fHTEFY2CT43w3D4WvXA`, {
+   axios.get(`https://app.nativenotify.com/api/expo/indie/subs/23100/SfypJls2IdMDc8uhwy7dDJ`, {
 
    }).then((response)=> {
      const ids = response.data.map(user=> user.sub_id)
@@ -72,8 +72,8 @@ const Reminders = () => {
       console.log(ids, "iids desde el map")
       axios.post('https://app.nativenotify.com/api/indie/notification', {
         subID: ids,                // ID único del usuario de aplicación
-        appId: 23061,                // ID de tu aplicación en Native Notify
-        appToken: 'op0fHTEFY2CT43w3D4WvXA', // Token de tu aplicación en Native Notify
+        appId: 23100,                // ID de tu aplicación en Native Notify
+        appToken: 'SfypJls2IdMDc8uhwy7dDJ', // Token de tu aplicación en Native Notify
         title: `Nuevo recordatorio de Abarrotes Juliancito`,                // Título de la notificación push
         message: message// Mensaje de la notificación push
     });
