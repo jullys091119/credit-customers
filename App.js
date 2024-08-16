@@ -12,7 +12,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import registerNNPushToken from 'native-notify';
 
 export default function App() {
-  registerNNPushToken(23098, 'uJ0T9h4SS9RzMAw99KSbhU');
+  registerNNPushToken(23100, 'SfypJls2IdMDc8uhwy7dDJ');
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <StatusBar style="auto" />
