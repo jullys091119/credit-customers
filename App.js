@@ -12,15 +12,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import registerNNPushToken from 'native-notify';
 
 export default function App() {
-  
   registerNNPushToken(23061, 'op0fHTEFY2CT43w3D4WvXA');
-  
-
-
-
   return (
-
-
     <GestureHandlerRootView style={{ flex: 1 }}>
       <StatusBar style="auto" />
       <ApplicationProvider {...eva} theme={eva.light}>

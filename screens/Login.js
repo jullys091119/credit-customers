@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react'
+import React, { useState, useContext, useEffect } from 'react'
 import {
 View,
 Text,
@@ -11,7 +11,9 @@ import { Avatar} from 'react-native-paper';
 import { loginContext } from '../context/context';
 import { TextInput, } from 'react-native-paper';
 import {ActivityIndicator} from 'react-native-paper';
-
+import { registerIndieID, unregisterIndieDevice } from 'native-notify';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
 
 const Login = ({navigation}) => {
   const { login,setUser,setPass,user,pass,alertErrorsSales } = useContext(loginContext);
@@ -23,6 +25,8 @@ const Login = ({navigation}) => {
     let status = await login()
       if (status == 200) {
         setIsLoaded(false)
+        UidTokenNotify()
+        sendNotification()
         navigation.navigate("HomeScreen")
         setUser("")
         setPass("")
@@ -51,6 +55,33 @@ const Login = ({navigation}) => {
      console.log(error)
     }
   };
+
+  const UidTokenNotify = async () => {
+    const UID = await AsyncStorage.getItem("@UID")
+    // Native Notify Indie Push Registration Code
+    registerIndieID(UID.toString(), 23061, 'op0fHTEFY2CT43w3D4WvXA');
+    // End of Native Notify Code
+  }
+
+  
+  const sendNotification = async (message) => {
+    const UID = await AsyncStorage.getItem("@UID")
+    const name = await AsyncStorage.getItem('@NAMEUSER')
+    try {
+        await axios.post('https://app.nativenotify.com/api/indie/notification', {
+            subID: UID,                // ID único del usuario de aplicación
+            appId: 23061,                // ID de tu aplicación en Native Notify
+            appToken: 'op0fHTEFY2CT43w3D4WvXA', // Token de tu aplicación en Native Notify
+            title: `Bienvenid@ ${name}`,                // Título de la notificación push
+            message: message             // Mensaje de la notificación push
+        });
+        console.log('Notification sent successfully');
+    } catch (error) {
+        console.error('Error sending notification:', error);
+    }
+  };
+
+
 
   const AvataLogin = () => (
     <TouchableOpacity onPress={()=> {handleLogin()}}>
