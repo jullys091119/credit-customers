@@ -1,31 +1,21 @@
 {
-  "cli": {
-    "version": ">= 8.0.0"
-  },
   "build": {
-    "development": {
-      "developmentClient": true,
-      "distribution": "internal"
-    },
     "preview": {
-      "distribution": "internal",
-      "android": {
-        "buildType": "apk"
-      },
-      "channel": "preview"
-    },
-    "production": {
-      "channel": "production"
-    },
-    "staging": {
-      "channel": "staging",
-      "distribution": "internal",
       "android": {
         "buildType": "apk"
       }
-    }
-  },
-  "submit": {
+    },
+    "preview2": {
+      "android": {
+        "gradleCommand": ":app:assembleRelease"
+      }
+    },
+    "preview3": {
+      "developmentClient": true
+    },
+    "preview4": {
+      "distribution": "internal"
+    },
     "production": {}
   }
 }
