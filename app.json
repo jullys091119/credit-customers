@@ -43,7 +43,6 @@
       "oneSignalAppId": "8a0ed2a9-cfa6-44a6-945d-16ee0d47dc0c"
     },
     "plugins": [
-      "@react-native-firebase/app",
       [
         "expo-updates",
         {

@@ -9,10 +9,11 @@ import * as eva from '@eva-design/eva';
 import { ApplicationProvider } from '@ui-kitten/components';
 import * as Notifications from 'expo-notifications';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import registerNNPushToken from 'native-notify';
+import messaging from '@react-native-firebase/messaging';
 
 export default function App() {
-  registerNNPushToken(23100, 'SfypJls2IdMDc8uhwy7dDJ');
+
+ 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <StatusBar style="auto" />
