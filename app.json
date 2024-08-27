@@ -44,6 +44,12 @@
     },
     "plugins": [
       [
+        "expo-dev-launcher",
+        {
+          "launchMode": "most-recent"
+        }
+      ],
+      [
         "expo-updates",
         {
           "username": "account-username"

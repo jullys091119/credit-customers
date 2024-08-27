@@ -12,6 +12,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Notifications from 'expo-notifications';
 import axios from 'axios';
 
+
 const Reminders = () => {
   const { addReminders, date,
     setVisibleModalReminders, visibleModalReminders,
@@ -39,47 +40,43 @@ const Reminders = () => {
     }
   };
 
-  useEffect(() => {
-    gettingCurrentReminders();
-  }, [nid, tkLoaded, tokens]);
 
+  const sendFCMNotification = async () => {
+    const FCM_URL = 'https://fcm.googleapis.com/v1/projects/creditcustomers-9a40a/messages:send';
+    const FCM_SERVER_KEY = ' ya29.a0AcM612ysj6ahNYjN_vE_ELLhYV37aTv9f4w9KAgzp1UzS3mg8BvpozeiMmHl3zvikRg7E1NpULjIffFErKJVPuh7pK2v0fDWrefp1LPe7KyswVJp7GX2FbrfhlAHhGvKEatgxGIpfzYySdKBzXavuHbe5UnEyI-EiJQSDAqTJ6mbHx0aCgYKAZMSARMSFQHGX2MiaMp5vAn_-ycTardXiqYWcA0182'; // Tu Server Key
+    const token = 'dL6wgCJfQOSeaYp9vcW1af:APA91bFg28fw0YZLqNSNOp-uaxTlRBcti07XiTlnBSgh0GzlLypvIuesRfKf1FW0uJR7K7rfEdECxtD5XC0h480qQ6jN8IMtM1odBINHDw8jLkF0MXnMSofcksn79ggzFChaD2Yxc1V4'; // El token del dispositivo
 
-  const getAllUserNotification = async () => {
-    axios.get(`https://app.nativenotify.com/api/expo/indie/subs/23100/SfypJls2IdMDc8uhwy7dDJ`, {
-
-    }).then((response) => {
-      const ids = response.data.map(user => user.sub_id)
-      setUserIds(ids);
-    }).catch((e) => {
-      console.log(e, "error")
-    })
-  }
-
-  useEffect(() => {
-    getAllUserNotification()
-  }, [])
-
-
-  const sendNotification = async (message, date) => {
-    console.log(userIds, "userids")
     try {
-      if (!Array.isArray(userIds) || userIds === 0) {
-        throw new Error('subIds debe ser un array no vacío.');
-      }
-      axios.post(`https://app.nativenotify.com/api/indie/group/notification`, {
-        subIDs: userIds,
-        appId: 23100,
-        appToken: 'SfypJls2IdMDc8uhwy7dDJ',
-        title: 'Nuevo Recordatorio',
-        message: message
-      }).then((response) => {
-        console.log(response.data)
-      })
+      const response = await axios.post(
+        FCM_URL,
+        {
+          message: {
+            token: token,
+            notification: {
+              title: "Hello",
+              body: "World",
+            },
+          },
+        },
+        {
+          headers: {
+            'Authorization': `Bearer ${FCM_SERVER_KEY}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      console.log('Notification sent successfully:', response.data);
+      return response.data;
     } catch (error) {
       console.error('Error sending notification:', error);
+      throw error;
     }
   };
 
+  useEffect(() => {
+    gettingCurrentReminders();
+  }, [nid, tkLoaded, tokens]);
 
   const handleAddReminder = async () => {
     try {
@@ -87,7 +84,7 @@ const Reminders = () => {
       await gettingCurrentReminders(); // Refresca la lista después de agregar
       setMsg('');
       hideModal();
-      sendNotification(msg, date)
+      sendFCMNotification()
 
     } catch (error) {
       console.error('Error adding reminder:', error);
