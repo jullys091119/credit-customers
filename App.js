@@ -38,28 +38,6 @@ const handleInitialNotification = async () => {
 };
 
 export default function App() {
-  useEffect(() => {
-    // URL del servidor
-    const url = 'http://elalfaylaomega.com:3000/api/token'; // Cambia esto con tu dominio o IP
-
-    // Obtener el token desde el servidor
-    const fetchToken = async () => {
-      try {
-        const response = await fetch(url);
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
-        const data = await response.json();
-        console.log(data)
-      } catch (error) {
-
-      } finally {
-        
-      }
-    };
-
-    fetchToken();
-  }, []);
 
 
   useEffect(() => {

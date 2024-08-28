@@ -28,6 +28,9 @@ const Reminders = () => {
   const [tkLoaded, setTkLoaded] = useState(false)
   const [nid, setNid] = useState("")
   const [userIds, setUserIds] = useState([]);
+  const [tokenFirebaseAuth0, setTokenFirebaseAuth0] = useState("")
+  const [tokenDevice, setTokenDevice] = useState("")
+  const [tokenDeviceDrupal, setTokenDeviceDrupal] = useState([])
 
 
   const gettingCurrentReminders = async () => {
@@ -40,11 +43,106 @@ const Reminders = () => {
     }
   };
 
+ 
+async function fetchToken() {
+  const tkDevice = await AsyncStorage.getItem("TK-NOTY")
+  setTokenDevice(tkDevice)
+  try {
+    // Hacer la solicitud GET para obtener el token
+    const response = await axios.get('http://54.218.224.215:8082/api/token');
+    
+    // Verificar si la respuesta contiene el token
+    if (response.data && response.data.token) {
+      const token = response.data.token;
+      // console.log('Token fetched successfully:', token);
+      setTokenFirebaseAuth0(token)
+      return token;
+    } else {
+      console.error('Token not found in response');
+      return null;
+    }
+  } catch (error) {
+    // Manejo de errores
+    if (error.response) {
+      // La respuesta fue hecha y el servidor respondió con un código de estado fuera del rango de 2xx
+      console.error('Error response data:', error.response.data);
+      console.error('Error response status:', error.response.status);
+      console.error('Error response headers:', error.response.headers);
+    } else if (error.request) {
+      // La solicitud fue hecha pero no se recibió respuesta
+      console.error('Error request:', error.request);
+    } else {
+      // Algo pasó al preparar la solicitud que lanzó un error
+      console.error('Error message:', error.message);
+    }
+    console.error('Error config:', error.config);
+    return null;
+  } 
+}
+  
 
+//Enviamos los tokens a Drupal 
+const sendTokenDevices = async (tokenDevice) => {
+    getTokenDevices()
+    const token = await AsyncStorage.getItem("@TOKEN")
+    const options = {
+      method: 'POST',
+      url: 'https://elalfaylaomega.com/credit-customer/jsonapi/node/notification_push',
+      headers: {
+        Accept: 'application/vnd.api+json',
+        Authorization: 'Authorization: Basic YXBpOmFwaQ==',
+        'Content-Type': 'application/vnd.api+json',
+        'X-CSRF-Token': token,
+      },
+      data: {
+        data: {
+          type: 'node--notification-push',
+          attributes: {
+            title: 'tokens guardados',
+            field_token: tokenDevice,
+          },
+        },
+      },
+    };
+    
+    const response = await axios.request(options);
+    if (response) {
+      // console.log(response);
+    }
+  }
+  
+  useEffect(() => {
+    fetchToken() 
+  
+  }, [tokenDevice]);
+
+
+  //Obtenemos los tokens de drupal
+  const getTokenDevices = async() => {
+    const options = {
+      method: 'GET',
+      url: 'https://elalfaylaomega.com/credit-customer/jsonapi/node/notification_push',
+      headers: {
+        Accept: 'application/vnd.api+json',
+        Authorization: 'Authorization: Basic YXBpOmFwaQ==',
+        'Content-Type': 'application/vnd.api+json',
+      }
+    };
+
+    const response = await axios.request(options);
+    if (response) {
+      const id  = response.data.data.map(token => token.attributes.field_token);
+      setTokenDeviceDrupal(id)
+    }
+
+  }
+
+
+  
   const sendFCMNotification = async () => {
     const FCM_URL = 'https://fcm.googleapis.com/v1/projects/creditcustomers-9a40a/messages:send';
-    const FCM_SERVER_KEY = ' ya29.a0AcM612ysj6ahNYjN_vE_ELLhYV37aTv9f4w9KAgzp1UzS3mg8BvpozeiMmHl3zvikRg7E1NpULjIffFErKJVPuh7pK2v0fDWrefp1LPe7KyswVJp7GX2FbrfhlAHhGvKEatgxGIpfzYySdKBzXavuHbe5UnEyI-EiJQSDAqTJ6mbHx0aCgYKAZMSARMSFQHGX2MiaMp5vAn_-ycTardXiqYWcA0182'; // Tu Server Key
-    const token = 'dL6wgCJfQOSeaYp9vcW1af:APA91bFg28fw0YZLqNSNOp-uaxTlRBcti07XiTlnBSgh0GzlLypvIuesRfKf1FW0uJR7K7rfEdECxtD5XC0h480qQ6jN8IMtM1odBINHDw8jLkF0MXnMSofcksn79ggzFChaD2Yxc1V4'; // El token del dispositivo
+    const FCM_SERVER_KEY = 'ya29.c.c0ASRK0GZWq6_4kFQq-iOs9Q2LIePkqd2vwqp2uIHYdxO5t2wf9kBcKjD3EB9BsouBu3E1TievHTL9qCgVPbDBKDrY-QQGicuu0muTx9ljTj9ntsm_MEXBjIJSOlFt95FIWYFIBM49kyz-KKSKxama8p2SQJcC5ZvwWWcRVMVsjnt-D_E9aonRvwdDHE_BOsC3hiWdOvcHMZy4JnJvLaOPwTuuxj2ICiccFdBSSgcAjNuTnRdmv2c77W804SFylPvmlGv7Vfd3kluUVQ7KvmOYS5vFOHJFRZFqBJdDh_789GDuUsEcI18F3RAnXNjFdHAPfdDVq5Yb8QwWIX6BOesnetR1d8RQAB0sIYV6ymhDMSHj0vlU6Aivr2BaG385Asgpy1ygFnUo97p8ctus-erdeiBqUl2g0lboiBXe9vnSl_ruwwi6QYJyi0Btxxr462I6_xgBmhBQZMlti7hm4_gvMi6cep1jmqBeXBy0O5f8_at1zk_vkqgWUVofVyhxhah-BvlQ13drvSwbV0RxjkajaOeQ3cwZUy9t-0u8OMwp7xiMlR6UfBMt5oaF2hJfxutBxBg7IgqBOO26Rc4aVMzif0iWYsI-9IdZ_m8FiFrcRZj_arafImgFwcc4ph6iOxVBjjlUBiMyJ_nI7Ot-fXjBUoF1zglgS74zWr1j_8_3cu31JnB4c1osqi5J3Y_yyjzRd7dhJ0uQYzutlSJBkfceMQbuS5kRWkbYlqlbeQ0sYwYnMfYYQkcU6xxh8Ykg4hw4mac1abcyetMthM0pYp41Z3O2ZX7boobo2SsrvZ7l2Vm12XFf2Bcxq0kaXmvMtXepb5V8F6p1MRtl8niUMb5FU_naiuYRxrp1d-ss3SxjMdR494hhxgdzQmZe62QrBo1X84uQcB88nO0wOQ10FRZtrcbeU6srcOenI_zO_Ys86Rgzr8fqmwv6jjFSVoZehv5y2WzsOk6gWO62JdsdjXaYJFyMU3s_xI0IJBsv8VgZOizyni3uf9Ucv3q'; // Tu Server Key
+    const token = 'eRMEeU8-TTuX8Jmo9CL7cW:APA91bELtRw9ec3upHAyL9YQH7yx1X0nsHY9bdA4DSOyS_PTcHCJnVwaVtpjuJv4a5tl5ce0in2Pdu3rMyCMZQMQ2Ri1vd0T2AJ5FBCqbcd7dlabZ122h--XoBhs1tEcwrCNvEFcoIQQ'; // El token del dispositivo
 
     try {
       const response = await axios.post(
@@ -67,12 +165,30 @@ const Reminders = () => {
       );
 
       console.log('Notification sent successfully:', response.data);
+      sendTokenDevices(token)
       return response.data;
     } catch (error) {
-      console.error('Error sending notification:', error);
-      throw error;
-    }
+      // Manejo de errores
+      if (error.response) {
+        // La respuesta fue hecha y el servidor respondió con un código de estado fuera del rango de 2xx
+        console.error('Error response data:', error.response.data);
+        console.error('Error response status:', error.response.status);
+        console.error('Error response headers:', error.response.headers);
+      } else if (error.request) {
+        // La solicitud fue hecha pero no se recibió respuesta
+        console.error('Error request:', error.request);
+      } else {
+        // Algo pasó al preparar la solicitud que lanzó un error
+        console.error('Error message:', error.message);
+      }
+      console.error('Error config:', error.config);
+      return null;
+    } 
   };
+  
+  useEffect(()=> {
+    fetchToken()
+  },[])
 
   useEffect(() => {
     gettingCurrentReminders();
