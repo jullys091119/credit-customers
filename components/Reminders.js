@@ -87,8 +87,10 @@ async function fetchToken() {
 //Enviamos los tokens a Drupal 
 const sendTokenDevices = async () => {
     const token = await AsyncStorage.getItem("@TOKEN")
-    setUpdateTokens(true)
+    console.log("arrays de tokens",tokenDeviceDrupal)
+    console.log("token device",tokenDevice)
     if(tokenDeviceDrupal.includes(tokenDevice)) {
+      setUpdateTokens(true)
       console.log("token ya existe")
       return;
     } else {
