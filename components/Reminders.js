@@ -1,99 +1,53 @@
 import React, { useState, useContext, useEffect } from 'react';
-import { View, StyleSheet, Text, FlatList, ScrollView, Keyboard, KeyboardEvent, KeyboardEventListener } from 'react-native';
+import { View, StyleSheet, Text, FlatList, TouchableOpacity, TouchableWithoutFeedback } from 'react-native';
 import { loginContext } from '../context/context';
 import { FAB, Provider as PaperProvider, Portal, Modal, Icon, TextInput } from 'react-native-paper';
-import { TouchableOpacity, TouchableWithoutFeedback } from 'react-native-gesture-handler';
 import { CalendarCustomDayShowcase } from './Calendar';
 import Swipeable from 'react-native-gesture-handler/Swipeable';
 import moment from 'moment';
 import 'moment/locale/es'; // Importar el locale en español
 import { Button } from '@ui-kitten/components';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as Notifications from 'expo-notifications';
 import axios from 'axios';
 
-
 const Reminders = () => {
-  const { addReminders, date,
+  const {
+    addReminders, date,
     setVisibleModalReminders, visibleModalReminders,
-    getReminders, deleteReminders, nameUser, setTokensNotifications, tk, setDataToken, dataToken } = useContext(loginContext);
+    getReminders, deleteReminders, nameUser, setTokensNotifications, tk, setDataToken, dataToken
+  } = useContext(loginContext);
+  
   const [dateModalVisible, setDateModalVisible] = useState(false);
   const [dataReminders, setDataReminders] = useState([]);
-  const [msg, setMsg] = useState("")
-  const showModal = () => setVisibleModalReminders(true);
-  const hideModal = () => setVisibleModalReminders(false);
-  const showModalDate = () => setDateModalVisible(true);
-  const hideModalDate = () => setDateModalVisible(false);
-  const [tokens, setTokens] = useState([]);
-  const [tkLoaded, setTkLoaded] = useState(false)
-  const [nid, setNid] = useState("")
+  const [msg, setMsg] = useState("");
   const [updateTokens, setUpdateTokens] = useState(false);
-  const [tokenFirebaseAuth0, setTokenFirebaseAuth0] = useState("")
+  const [tokenFirebaseAuth0, setTokenFirebaseAuth0] = useState("");
   const [tokenDevice, setTokenDevice] = useState("")
-  const [tokenDeviceDrupal, setTokenDeviceDrupal] = useState([])
-  
-
-  const gettingCurrentReminders = async () => {
+  const [nid, setNid] = useState("")
+  // Fetch token from the server
+  const fetchToken = async () => {
     try {
-      const data = await getReminders();
-      // console.log('Fetched reminders:', data);
-      setDataReminders(data);
+      const response = await axios.get('http://54.218.224.215:8082/api/token');
+      if (response.data && response.data.token) {
+        const token = response.data.token;
+        setTokenFirebaseAuth0(token);
+        return token;
+      } else {
+        console.error('Token not found in response');
+        return null;
+      }
     } catch (error) {
-      console.error('Error fetching reminders:', error);
+      console.error('Error fetching token:', error);
+      return null;
     }
   };
 
- 
-async function fetchToken() {
+  // Send device token to Drupal
+  const sendTokenDevices = async (tokenDevice) => {
+    const token = await AsyncStorage.getItem("@TOKEN");
+    const tokenDeviceDrupalNotify = await getTokenDevices();
 
-  //actualizando token del celular
-  const tkDevice = await AsyncStorage.getItem("TK-NOTY")
-  setTokenDevice(tkDevice)
-  try {
-    // Hacer la solicitud GET para obtener el token
-    const response = await axios.get('http://54.218.224.215:8082/api/token');
-    
-    // Verificar si la respuesta contiene el token
-    if (response.data && response.data.token) {
-      const token = response.data.token;
-      // console.log('Token fetched successfully:', token);
-      //actualizando el token  auth0
-      setTokenFirebaseAuth0(token)
-      return token;
-    } else {
-      console.error('Token not found in response');
-      return null;
-    }
-  } catch (error) {
-    // Manejo de errores
-    if (error.response) {
-      // La respuesta fue hecha y el servidor respondió con un código de estado fuera del rango de 2xx
-      console.error('Error response data:', error.response.data);
-      console.error('Error response status:', error.response.status);
-      console.error('Error response headers:', error.response.headers);
-    } else if (error.request) {
-      // La solicitud fue hecha pero no se recibió respuesta
-      console.error('Error request:', error.request);
-    } else {
-      // Algo pasó al preparar la solicitud que lanzó un error
-      console.error('Error message:', error.message);
-    }
-    console.error('Error config:', error.config);
-    return null;
-  } 
-}
-  
-
-//Enviamos los tokens a Drupal 
-const sendTokenDevices = async () => {
-    const token = await AsyncStorage.getItem("@TOKEN")
-    console.log("arrays de tokens",tokenDeviceDrupal)
-    console.log("token device",tokenDevice)
-    if(tokenDeviceDrupal.includes(tokenDevice)) {
-      setUpdateTokens(true)
-      console.log("token ya existe")
-      return;
-    } else {
+    if (!tokenDeviceDrupalNotify.includes(tokenDevice)) {
       const options = {
         method: 'POST',
         url: 'https://elalfaylaomega.com/credit-customer/jsonapi/node/notification_push',
@@ -113,56 +67,50 @@ const sendTokenDevices = async () => {
           },
         },
       };
-      
-      const response = await axios.request(options);
-      if (response) {
-        // console.log(response);
+
+      try {
+        await axios.request(options);
+        console.log('Token sent to Drupal successfully');
+      } catch (error) {
+        console.error('Error sending token to Drupal:', error);
       }
-
+    } else {
+      console.log("Token ya existe en Drupal");
     }
-  }
-  
-  useEffect(() => {
-    fetchToken() 
-    getTokenDevices()
-  }, [tokenDevice, updateTokens]);
+  };
 
-
-
-  //Obtenemos los tokens de drupal
-  const getTokenDevices = async() => {
+  // Get token devices from Drupal
+  const getTokenDevices = async () => {
     const options = {
       method: 'GET',
       url: 'https://elalfaylaomega.com/credit-customer/jsonapi/node/notification_push',
-      headers: { 
+      headers: {
         Accept: 'application/vnd.api+json',
         Authorization: 'Authorization: Basic YXBpOmFwaQ==',
         'Content-Type': 'application/vnd.api+json',
       }
     };
 
-    const response = await axios.request(options);
-    if (response) {
-      const id  = response.data.data.map(token => token.attributes.field_token);
-      console.log(id)
-      setTokenDeviceDrupal(id)
+    try {
+      const response = await axios.request(options);
+      const ids = response.data.data.map(token => token.attributes.field_token);
+      return ids;
+    } catch (error) {
+      console.error('Error fetching tokens from Drupal:', error);
+      return [];
     }
+  };
 
-  }
-
- 
-
+  // Send FCM notification
   const sendFCMNotification = async () => {
-    await sendTokenDevices(); // Asume que esta función se encarga de preparar el entorno
-  
+    const tokenDeviceDrupalNotify = await getTokenDevices();
+    const tokenDevice = await AsyncStorage.getItem("TK-NOTY");
+    console.log(tokenDevice, "tokendevice")
     const FCM_URL = 'https://fcm.googleapis.com/v1/projects/creditcustomers-9a40a/messages:send';
-    const FCM_SERVER_KEY = tokenFirebaseAuth0; // Asegúrate de que este token sea válido
-    const tokenDeviceDrupalNotify = tokenDeviceDrupal
-    const currentDeviceToken =  tokenDevice
-    
-    const filtered  = tokenDeviceDrupalNotify.filter(token => token !== currentDeviceToken && token !== null)
-    
-    for (const token of filtered) {
+    const FCM_SERVER_KEY = tokenFirebaseAuth0;
+    const filter = tokenDeviceDrupalNotify.filter((tk)=> tk !== tokenDevice )
+
+    for (const token of filter) {
       try {
         const response = await axios.post(
           FCM_URL,
@@ -170,8 +118,8 @@ const sendTokenDevices = async () => {
             message: {
               token: token,
               notification: {
-                title: "Hello",
-                body: "World",
+                title: "JUliancito bebe Te amo",
+                body: "Este mensaje es para el juliancito bebe el nino mas bonito del planeta tierra",
               },
             },
           },
@@ -182,60 +130,62 @@ const sendTokenDevices = async () => {
             },
           }
         );
-        
-        // Registra la respuesta de la notificación
+
         console.log('Notification sent successfully:', response.data);
       } catch (error) {
-        // Manejo de errores
-        if (error.response) {
-          // La respuesta fue hecha y el servidor respondió con un código de estado fuera del rango de 2xx
-          console.error('Error response data:', error.response.data);
-          console.error('Error response status:', error.response.status);
-          console.error('Error response headers:', error.response.headers);
-        } else if (error.request) {
-          // La solicitud fue hecha pero no se recibió respuesta
-          console.error('Error request:', error.request);
-        } else {
-          // Algo pasó al preparar la solicitud que lanzó un error
-          console.error('Error message:', error.message);
-        }
-        console.error('Error config:', error.config);
+        console.error('Error sending notification:', error);
       }
     }
   };
-  
 
+  // Fetch reminders and update state
+  const gettingCurrentReminders = async () => {
+    try {
+      const data = await getReminders();
+      setDataReminders(data);
+    } catch (error) {
+      console.error('Error fetching reminders:', error);
+    }
+  };
 
-  
-  
-  useEffect(()=> {
-    fetchToken()
-    // getTokenDevices()
-  },[])
-
-  useEffect(() => {
-    gettingCurrentReminders();
-  }, [nid, tkLoaded, tokens]);
-
+  // Handle add reminder
   const handleAddReminder = async () => {
     try {
       await addReminders(msg, date);
-      await gettingCurrentReminders(); // Refresca la lista después de agregar
+      const tokenDevice = await AsyncStorage.getItem("TK-NOTY");
+      if (tokenDevice) {
+        setTokenDevice(tokenDevice)
+        await sendTokenDevices(tokenDevice);
+      }
+      await sendFCMNotification();
+      await gettingCurrentReminders();
       setMsg('');
-      hideModal();
-      sendFCMNotification()
-
+      setVisibleModalReminders(false);
     } catch (error) {
       console.error('Error adding reminder:', error);
     }
   };
 
-
+  // Handle delete reminder
   const handleDeleteReminders = async (nid) => {
-    setNid(nid)
-    await deleteReminders(nid)
-  }
+    try {
+      await deleteReminders(nid);
+      await gettingCurrentReminders();
+    } catch (error) {
+      console.error('Error deleting reminder:', error);
+    }
+  };
 
+  useEffect(() => {
+    fetchToken();
+    getTokenDevices();
+  }, [updateTokens]);
+
+  useEffect(() => {
+    gettingCurrentReminders();
+  }, [nid, updateTokens]);
+
+  // Render reminder item
   const renderItem = ({ item, index }) => (
     <Swipeable
       renderRightActions={() => (
@@ -254,7 +204,6 @@ const sendTokenDevices = async () => {
         <Text>Por : {nameUser}</Text>
         <Text style={styles.itemDate}>
           {item.date ? moment(item.date).format('dddd DD [de] MMMM') : "No Date"}
-          {/* Formato: sábado 23 de abril */}
         </Text>
       </View>
     </Swipeable>
@@ -274,21 +223,21 @@ const sendTokenDevices = async () => {
       <FAB
         icon="plus"
         style={styles.fab}
-        onPress={showModal}
+        onPress={() => setVisibleModalReminders(true)}
         color="white"
       />
       <Portal>
-        <Modal visible={dateModalVisible} onDismiss={hideModalDate} contentContainerStyle={styles.modalContainer}>
+        <Modal visible={dateModalVisible} onDismiss={() => setDateModalVisible(false)} contentContainerStyle={styles.modalContainer}>
           <CalendarCustomDayShowcase />
-          <Button onPress={hideModalDate} style={{ marginVertical: 40 }}>Cerrar</Button>
+          <Button onPress={() => setDateModalVisible(false)} style={{ marginVertical: 40 }}>Cerrar</Button>
         </Modal>
       </Portal>
       <Portal>
-        <Modal visible={visibleModalReminders} onDismiss={hideModal} contentContainerStyle={styles.modalContainerDate}>
+        <Modal visible={visibleModalReminders} onDismiss={() => setVisibleModalReminders(false)} contentContainerStyle={styles.modalContainerDate}>
           <View style={styles.headerModal}>
             <Text style={styles.txtReminders}>Crear Recordatorio</Text>
             <View style={styles.bodyDate}>
-              <TouchableWithoutFeedback onPress={showModalDate}>
+              <TouchableWithoutFeedback onPress={() => setDateModalVisible(true)}>
                 <Icon source="calendar" color="#0093CE" size={37} />
               </TouchableWithoutFeedback>
             </View>
@@ -303,7 +252,6 @@ const sendTokenDevices = async () => {
                 style={{ padding: 10, height: 180 }}
                 onChangeText={(txt) => setMsg(txt)}
               />
-
               <Button onPress={handleAddReminder} style={{ backgroundColor: "#0093CE", borderWidth: 0, marginVertical: 15 }}>Crear</Button>
             </View>
           </View>
@@ -418,7 +366,6 @@ const styles = StyleSheet.create({
     color: '#0093CE',
     fontWeight: "500",
     marginVertical: 10,
-
   },
 
   deleteButton: {
@@ -446,7 +393,6 @@ const styles = StyleSheet.create({
     position: "absolute",
     right: 0,
     top: -10
-
   }
 });
 
