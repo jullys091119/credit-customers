@@ -53,7 +53,7 @@ const Reminders = () => {
         url: 'https://elalfaylaomega.com/credit-customer/jsonapi/node/notification_push',
         headers: {
           Accept: 'application/vnd.api+json',
-          Authorization: 'Authorization: Basic YXBpOmFwaQ==',
+          'Authorization': 'Basic YXBpOmFwaQ==',
           'Content-Type': 'application/vnd.api+json',
           'X-CSRF-Token': token,
         },
@@ -72,7 +72,22 @@ const Reminders = () => {
         await axios.request(options);
         console.log('Token sent to Drupal successfully');
       } catch (error) {
-        console.error('Error sending token to Drupal:', error);
+        if (error.response) {
+          // La respuesta fue hecha y el servidor respondió con un código de estado
+          // que esta fuera del rango de 2xx
+          console.log(error.response.data);
+          console.log(error.response.status);
+          console.log(error.response.headers);
+        } else if (error.request) {
+          // La petición fue hecha pero no se recibió respuesta
+          // `error.request` es una instancia de XMLHttpRequest en el navegador y una instancia de
+          // http.ClientRequest en node.js
+          console.log(error.request);
+        } else {
+          // Algo paso al preparar la petición que lanzo un Error
+          console.log('Error', error.message);
+        }
+        console.log(error.config);
       }
     } else {
       console.log("Token ya existe en Drupal");
@@ -102,7 +117,7 @@ const Reminders = () => {
   };
 
   // Send FCM notification
-  const sendFCMNotification = async () => {
+  const sendFCMNotification = async (msg) => {
     const tokenDeviceDrupalNotify = await getTokenDevices();
     const tokenDevice = await AsyncStorage.getItem("TK-NOTY");
     console.log(tokenDevice, "tokendevice")
@@ -118,8 +133,8 @@ const Reminders = () => {
             message: {
               token: token,
               notification: {
-                title: "JUliancito bebe Te amo",
-                body: "Este mensaje es para el juliancito bebe el nino mas bonito del planeta tierra",
+                title: "Abarrotes Juliancito 🏪",
+                body: `📨 Recordatorio Nuevo: ${msg}`,
               },
             },
           },
@@ -157,7 +172,7 @@ const Reminders = () => {
         setTokenDevice(tokenDevice)
         await sendTokenDevices(tokenDevice);
       }
-      await sendFCMNotification();
+      await sendFCMNotification(msg,date);
       await gettingCurrentReminders();
       setMsg('');
       setVisibleModalReminders(false);
