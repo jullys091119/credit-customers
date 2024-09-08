@@ -28,7 +28,7 @@ const Reminders = () => {
 
   const fetchToken = async () => {
     try {
-      const response = await axios.get("https://d7374061-84c3-48c8-a77b-d0aaa5ec19ce-00-goj1ky50z6rj.worf.replit.dev/api/token");
+      const response = await axios.get("https://extraordinary-tenderness-production.up.railway.app/api/token");
       if (response.data && response.data.token) {
         const token = response.data.token;
         setTokenFirebaseAuth0(token);
