@@ -166,8 +166,6 @@ const Reminders = () => {
           }
         );
         console.log('Notification sent successfully:', response.data);
-        alert("sendi ng")
-
       } catch (error) {
         if (error.response) {
           // La respuesta fue hecha y el servidor respondió con un código de estado

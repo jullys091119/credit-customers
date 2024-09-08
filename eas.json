@@ -15,6 +15,13 @@
         "buildType": "app-bundle",
         "distribution": "store"
       }
+    },
+    "staging": {
+      "channel": "staging",
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      }
     }
   }
 }
