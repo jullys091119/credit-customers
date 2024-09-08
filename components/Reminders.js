@@ -24,10 +24,11 @@ const Reminders = () => {
   const [tokenFirebaseAuth0, setTokenFirebaseAuth0] = useState("");
   const [tokenDevice, setTokenDevice] = useState("")
   const [nid, setNid] = useState("")
-  // Fetch token from the server
+
+
   const fetchToken = async () => {
     try {
-      const response = await axios.get('http://54.218.224.215:8082/api/token');
+      const response = await axios.get("https://d7374061-84c3-48c8-a77b-d0aaa5ec19ce-00-goj1ky50z6rj.worf.replit.dev/api/token");
       if (response.data && response.data.token) {
         const token = response.data.token;
         setTokenFirebaseAuth0(token);
@@ -36,17 +37,35 @@ const Reminders = () => {
         console.error('Token not found in response');
         return null;
       }
-    } catch (error) {
-      console.error('Error fetching token:', error);
+    } catch (error) {  
+      // Maneja errores y muestra información detallada
+      if (error.response) {
+        // La solicitud se hizo y el servidor respondió con un estado de error
+        console.error('Error fetching token:', {
+          status: error.response.status,
+          data: error.response.data,
+          headers: error.response.headers,
+        });
+      } else if (error.request) {
+        // La solicitud se hizo pero no se recibió respuesta
+        console.error('Error fetching token: No response received', {
+          request: error.request,
+        });
+      } else {
+        // Algo salió mal al configurar la solicitud
+        console.error('Error fetching token:', {
+          message: error.message,
+        });
+      }
       return null;
     }
   };
+  
 
   // Send device token to Drupal
   const sendTokenDevices = async (tokenDevice) => {
     const token = await AsyncStorage.getItem("@TOKEN");
     const tokenDeviceDrupalNotify = await getTokenDevices();
-
     if (!tokenDeviceDrupalNotify.includes(tokenDevice)) {
       const options = {
         method: 'POST',
@@ -120,11 +139,12 @@ const Reminders = () => {
   const sendFCMNotification = async (msg) => {
     const tokenDeviceDrupalNotify = await getTokenDevices();
     const tokenDevice = await AsyncStorage.getItem("TK-NOTY");
-    console.log(tokenDevice, "tokendevice")
-    const FCM_URL = 'https://fcm.googleapis.com/v1/projects/creditcustomers-9a40a/messages:send';
+    const FCM_URL = 'https://fcm.googleapis.com/v1/projects/credit-customers-69505/messages:send';
     const FCM_SERVER_KEY = tokenFirebaseAuth0;
+    console.log(FCM_SERVER_KEY, "fcm server")
+    
     const filter = tokenDeviceDrupalNotify.filter((tk)=> tk !== tokenDevice )
-
+  
     for (const token of filter) {
       try {
         const response = await axios.post(
@@ -145,10 +165,26 @@ const Reminders = () => {
             },
           }
         );
-
         console.log('Notification sent successfully:', response.data);
+        alert("sendi ng")
+
       } catch (error) {
-        console.error('Error sending notification:', error);
+        if (error.response) {
+          // La respuesta fue hecha y el servidor respondió con un código de estado
+          // que esta fuera del rango de 2xx
+          console.log(error.response.data);
+          console.log(error.response.status);
+          console.log(error.response.headers);
+        } else if (error.request) {
+          // La petición fue hecha pero no se recibió respuesta
+          // `error.request` es una instancia de XMLHttpRequest en el navegador y una instancia de
+          // http.ClientRequest en node.js
+          console.log(error.request);
+        } else {
+          // Algo paso al preparar la petición que lanzo un Error
+          console.log('Error', error.message);
+        }
+        console.log(error.config);
       }
     }
   };

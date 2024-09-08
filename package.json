@@ -1,3 +1,4 @@
+
 {
   "name": "credit-customers",
   "version": "1.0.0",
@@ -25,6 +26,7 @@
     "axios": "^1.7.5",
     "base-64": "^1.0.0",
     "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
     "expo": "~51.0.31",
     "expo-constants": "~16.0.2",
     "expo-dev-client": "~4.0.25",
@@ -34,7 +36,7 @@
     "expo-status-bar": "~1.12.1",
     "expo-updates": "~0.25.24",
     "express": "^4.19.2",
-    "google-auth-library": "^9.14.0",
+    "google-auth-library": "^9.14.1",
     "jsonwebtoken": "^9.0.2",
     "moment": "^2.30.1",
     "native-notify": "^4.0.4",
@@ -42,6 +44,7 @@
     "react-dom": "18.2.0",
     "react-native": "0.74.5",
     "react-native-confetti-cannon": "^1.5.2",
+    "react-native-dotenv": "^3.4.11",
     "react-native-gesture-handler": "~2.16.1",
     "react-native-onesignal": "^5.2.2",
     "react-native-paper": "^5.12.3",

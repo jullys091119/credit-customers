@@ -27,7 +27,7 @@ async function getAccessToken() {
       tokenExpiry = Date.now() + (tokens.expires_in * 1000); // Expira en segundos, convertir a milisegundos
       
       console.log('Nuevo Access Token:', token);
-      return token;
+      return token;    
     } catch (error) {
       console.error('Error obteniendo el token de acceso:', error);
       throw error; // Lanza el error para manejarlo adecuadamente
