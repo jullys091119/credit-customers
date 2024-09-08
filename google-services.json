@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "624765256349",
-    "project_id": "creditcustomers-9a40a",
-    "storage_bucket": "creditcustomers-9a40a.appspot.com"
+    "project_number": "350721192758",
+    "project_id": "credit-customers-69505",
+    "storage_bucket": "credit-customers-69505.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:624765256349:android:3628d50889bacbf99dca74",
+        "mobilesdk_app_id": "1:350721192758:android:9c51ade972aacae7fa7997",
         "android_client_info": {
           "package_name": "com.huerogil.creditcustomers"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyAPhcnxIhxkW4iFpPCGoPjqTk1NP2opu6Q"
+          "current_key": "AIzaSyAozoyaj_rNn7977X1EBgMB9DAtGBtGFvs"
         }
       ],
       "services": {
