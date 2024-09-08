@@ -31,7 +31,7 @@ export default function UpdatesApp() {
       <Text style={{marginVertical:10}}>{runTypeMessage}</Text>
       <Button onPress={() => Updates.checkForUpdateAsync()}  style={{borderWidth:0, backgroundColor: "#0093CE"}}>Buscar actualizaciones</Button>
       {showDownloadButton ? (
-        <Button onPress={() => Updates.fetchUpdateAsync()}>Bajar e instalar atualizaciones.</Button>
+        <Button onPress={() => Updates.fetchUpdateAsync()} style={{borderWidth:0, backgroundColor: "#0093CE"}}>Bajar e instalar atualizaciones.</Button>
       ) : null}
       <StatusBar style="auto" />
     </View>
