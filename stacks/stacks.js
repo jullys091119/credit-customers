@@ -17,6 +17,8 @@ import Register from '../components/Register';
 import Customers from '../screens/Customers';
 import Reminders from '../components/Reminders';
 import payUser from '../components/PayUser';
+import Sales from '../components/Sales';
+
 
 
 function HomeTabs() {
@@ -51,6 +53,18 @@ function HomeTabs() {
             />
           </> :
           <>
+           <Tab.Screen
+              name="Sales"
+              component={Sales}
+              options={{
+                tabBarLabel: "Sales",
+                headerShown: false,
+                tabBarIcon: ({ color, size }) => (
+                  <Icon source="message-text-clock-outline" color="#0093CE" size={37} />
+                ),
+              }}
+
+            />
             <Tab.Screen
               name="Creditos de clientes"
               component={Alphabet}
@@ -62,6 +76,7 @@ function HomeTabs() {
                 ),
               }}
             />
+
             <Tab.Screen
               name="Reminders"
               component={Reminders}

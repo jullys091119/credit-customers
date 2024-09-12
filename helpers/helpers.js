@@ -23,9 +23,9 @@ const ListAccessoriesShowcase = ({ navigation }) => {
   const [isLoaded, setIsLoaded] = useState(false)
   const [saleSuccess, setSaleSuccess] = useState(false)
   const [isModalVisible, setModalVisible] = useState(false);
-  const [pay,setPay] = useState("")
+  const [pay, setPay] = useState("")
   const [confetti, setConfetti] = useState(false)
-  const { users, getCurrentUser, setShowHome, getSalesNoteBook, tk, alertErrorsSales,setUserName, userName } = useContext(loginContext);
+  const { users, getCurrentUser, setShowHome, getSalesNoteBook, tk, alertErrorsSales, setUserName, userName, sendFCMNotification, } = useContext(loginContext);
 
   const currentSales = async () => {
     await getCurrentUser();
@@ -135,9 +135,17 @@ const ListAccessoriesShowcase = ({ navigation }) => {
           });
 
           if (response.status === 204) {
+            let msgPayUser = ""
+            if (total > pay) {
+              msgPayUser = `El usuario ${userName.toUpperCase()} abonó su cuenta con $${pay} pesos. Su nuevo adeudo es de $${total - pay} pesos.`;
+            } else {
+              msgPayUser = `El usuario ${userName.toUpperCase} liquidó su cuenta con $${total} pesos.`;
+            }
+            console.log(msgPayUser, "msg")
             isLoaded = true;
             setSaleSuccess(true);
             setConfetti(true)
+            sendFCMNotification(msgPayUser)
           }
         } catch (error) {
           console.error(error, "error al actualizar");
@@ -159,13 +167,13 @@ const ListAccessoriesShowcase = ({ navigation }) => {
     }
 
     setIsLoaded(false);
-     setSaleSuccess(false)
-   
+    setSaleSuccess(false)
+
   };
 
   const renderItem = ({ item, index }) => {
     return (
-      
+
       <ListItem
         onPress={() => handleItemClick(item)}
         style={[styles.container]}
@@ -193,16 +201,16 @@ const ListAccessoriesShowcase = ({ navigation }) => {
         data={users}
         renderItem={renderItem}
         ItemSeparatorComponent={Divider}
-        />
+      />
       <Portal>
-       <PayUser modal={isModalVisible} 
-       setModal={setModalVisible} total={total}
-       payCountUser={payCountUser}
-       setPay={setPay} 
-       pay={pay}
-       setConfetti={setConfetti} 
-       confetti={confetti}
-       />
+        <PayUser modal={isModalVisible}
+          setModal={setModalVisible} total={total}
+          payCountUser={payCountUser}
+          setPay={setPay}
+          pay={pay}
+          setConfetti={setConfetti}
+          confetti={confetti}
+        />
         <Dialog
           visible={dialogVisible}
           onDismiss={handleDialogDismiss}
@@ -216,12 +224,12 @@ const ListAccessoriesShowcase = ({ navigation }) => {
             margin: 40,
             opacity: 1,
             borderRadius: 0,
-            zIndex:0,
+            zIndex: 0,
             position: "relative"
           }}
         >
           <Dialog.Content style={[styles.containerDialog]}>
-           
+
             <View style={[styles.containerSales]}>
               {selectedItem && (
                 <>
@@ -241,19 +249,20 @@ const ListAccessoriesShowcase = ({ navigation }) => {
                         source="cash-plus"
                         size={40}
                         color="#0093CE"
-                        />
+                      />
                       <Text style={{ color: "#0093CE" }}>Pagar</Text>
                     </TouchableWithoutFeedback>
                     <Text style={[styles.userSelected]}>
                       <Text style={[styles.nameUser]}>{selectedItem.name.toUpperCase()}</Text>
                     </Text>
                   </View>
-          
+
                   <Divider />
                 </>
               )}
-              <View style={{ display: "flex", flexDirection: "row-reverse", gap: 10, marginVertical: 10 }}>
+              <View style={{ display: "flex", flexDirection: "row", justifyContent: "space-between", gap: 10, marginVertical: 10 }}>
                 <Text style={{ alignSelf: "flex-end", fontSize: 20, fontWeight: "700", color: "#464555" }}>${total}.00</Text>
+                <Text style={{ fontWeight: "900", fontSize: 18 }}>Ventas: {data.length}</Text>
               </View>
               <View style={{ height: 200, overflow: "scroll" }}>
                 {/* {isLoaded && <ActivityIndicator animating={true} color="green" />} */}
@@ -299,7 +308,7 @@ const ListAccessoriesShowcase = ({ navigation }) => {
           </Dialog.Content>
         </Dialog>
       </Portal>
-      
+
     </>
   );
 
