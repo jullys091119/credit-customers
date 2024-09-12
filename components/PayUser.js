@@ -8,7 +8,7 @@ import ConfettiCannon from 'react-native-confetti-cannon'
 
 
 const PayUser = ({ modal, setModal,total,payCountUser,setPay,pay,setConfetti,confetti}) => {
-  const {userName} = useContext(loginContext)
+  const {userName, sendFCMNotification} = useContext(loginContext)
   const [visible, setIsVisible] = useState(false)
   const hideModal = () => setModal(false);
   const containerStyle = { backgroundColor: 'white',
@@ -29,8 +29,9 @@ const PayUser = ({ modal, setModal,total,payCountUser,setPay,pay,setConfetti,con
    if(!modal) {
     setConfetti(false)
    }
-  
  },[modal])
+
+
  
  
   return (
@@ -38,7 +39,7 @@ const PayUser = ({ modal, setModal,total,payCountUser,setPay,pay,setConfetti,con
       <Portal>
         <Modal visible={modal} onDismiss={hideModal} contentContainerStyle={containerStyle}>
           {confetti && <Confetti/>}
-          <Text style={styles.txt}>Desea pagar la cuenta de: {userName.toUpperCase()}? </Text>
+          <Text style={styles.txt}>Pagar la cuenta de: {userName.toUpperCase()}? </Text>
           <Input
             placeholder='Pagar cuenta'
             value={pay}

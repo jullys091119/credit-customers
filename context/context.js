@@ -7,6 +7,7 @@ import { decode, encode } from 'base-64';
 import { Alert } from "react-native";
 import moment from "moment";
 import 'moment/locale/es';
+
 const loginContext = createContext();
 // Configura el módulo base-64
 if (!global.btoa) {
@@ -45,6 +46,7 @@ const ProviderLogin = ({ children, navigation }) => {
   const [visibleModalReminders, setVisibleModalReminders] = useState(false);
   const [confetti, setConfetti] = useState(false)
   const [dataToken, setDataToken] = useState("")
+  const [tokenFirebaseAuth0, setTokenFirebaseAuth0] = useState("");
 
   const getSalesNoteBook = async (id) => {
     const options = {
@@ -402,6 +404,58 @@ const ProviderLogin = ({ children, navigation }) => {
       });
   };
 
+
+  // Send device token to Drupal
+  const sendTokenDevices = async (tokenDevice) => {
+    const token = await AsyncStorage.getItem("@TOKEN");
+    const tokenDeviceDrupalNotify = await getTokenDevices();
+    if (!tokenDeviceDrupalNotify.includes(tokenDevice)) {
+      const options = {
+        method: 'POST',
+        url: 'https://elalfaylaomega.com/credit-customer/jsonapi/node/notification_push',
+        headers: {
+          Accept: 'application/vnd.api+json',
+          'Authorization': 'Basic YXBpOmFwaQ==',
+          'Content-Type': 'application/vnd.api+json',
+          'X-CSRF-Token': token,
+        },
+        data: {
+          data: {
+            type: 'node--notification-push',
+            attributes: {
+              title: 'tokens guardados',
+              field_token: tokenDevice,
+            },
+          },
+        },
+      };
+
+      try {
+        await axios.request(options);
+        console.log('Token sent to Drupal successfully');
+      } catch (error) {
+        if (error.response) {
+          // La respuesta fue hecha y el servidor respondió con un código de estado
+          // que esta fuera del rango de 2xx
+          console.log(error.response.data);
+          console.log(error.response.status);
+          console.log(error.response.headers);
+        } else if (error.request) {
+          // La petición fue hecha pero no se recibió respuesta
+          // `error.request` es una instancia de XMLHttpRequest en el navegador y una instancia de
+          // http.ClientRequest en node.js
+          console.log(error.request);
+        } else {
+          // Algo paso al preparar la petición que lanzo un Error
+          console.log('Error', error.message);
+        }
+        console.log(error.config);
+      }
+    } else {
+      console.log("Token ya existe en Drupal");
+    }
+  };
+
   const setTokensNotifications = async (expoPushToken) => {
     console.log(expoPushToken, "data context")
    
@@ -445,9 +499,122 @@ const ProviderLogin = ({ children, navigation }) => {
 
 
 
+  const fetchToken = async () => {
+    try {
+      const response = await axios.get("https://extraordinary-tenderness-production.up.railway.app/api/token");
+      if (response.data && response.data.token) {
+        const token = response.data.token;
+        setTokenFirebaseAuth0(token);
+        return token;
+      } else {
+        console.error('Token not found in response');
+        return null;
+      }
+    } catch (error) {  
+      // Maneja errores y muestra información detallada
+      if (error.response) {
+        // La solicitud se hizo y el servidor respondió con un estado de error
+        console.error('Error fetching token:', {
+          status: error.response.status,
+          data: error.response.data,
+          headers: error.response.headers,
+        });
+      } else if (error.request) {
+        // La solicitud se hizo pero no se recibió respuesta
+        console.error('Error fetching token: No response received', {
+          request: error.request,
+        });
+      } else {
+        // Algo salió mal al configurar la solicitud
+        console.error('Error fetching token:', {
+          message: error.message,
+        });
+      }
+      return null;
+    }
+  };
+  
+
+
+  // Get token devices from Drupal
+  const getTokenDevices = async () => {
+    const options = {
+      method: 'GET',
+      url: 'https://elalfaylaomega.com/credit-customer/jsonapi/node/notification_push',
+      headers: {
+        Accept: 'application/vnd.api+json',
+        Authorization: 'Authorization: Basic YXBpOmFwaQ==',
+        'Content-Type': 'application/vnd.api+json',
+      }
+    };
+
+    try {
+      const response = await axios.request(options);
+      const ids = response.data.data.map(token => token.attributes.field_token);
+      return ids;
+    } catch (error) {
+      console.error('Error fetching tokens from Drupal:', error);
+      return [];
+    }
+  };
+
+
+  // Send FCM notification
+  const sendFCMNotification = async (msg) => {
+    const tokenDeviceDrupalNotify = await getTokenDevices();
+    const tokenDevice = await AsyncStorage.getItem("TK-NOTY");
+    const FCM_URL = 'https://fcm.googleapis.com/v1/projects/credit-customers-69505/messages:send';
+    const FCM_SERVER_KEY = tokenFirebaseAuth0;
+    console.log(FCM_SERVER_KEY, "fcm server")
+    
+    const filter = tokenDeviceDrupalNotify.filter((tk)=> tk !== tokenDevice )
+  
+    for (const token of filter) {
+      try {
+        const response = await axios.post(
+          FCM_URL,
+          {
+            message: {
+              token: token,
+              notification: {
+                title: "Abarrotes Juliancito 🏪",
+                body: `📩 Recordatorio Nuevo: ${msg}`,
+              },
+            },
+          },
+          {
+            headers: {
+              'Authorization': `Bearer ${FCM_SERVER_KEY}`,
+              'Content-Type': 'application/json',
+            },
+          }
+        );
+        console.log('Notification sent successfully:', response.data);
+      } catch (error) {
+        if (error.response) {
+          // La respuesta fue hecha y el servidor respondió con un código de estado
+          // que esta fuera del rango de 2xx
+          console.log(error.response.data);
+          console.log(error.response.status);
+          console.log(error.response.headers);
+        } else if (error.request) {
+          // La petición fue hecha pero no se recibió respuesta
+          // `error.request` es una instancia de XMLHttpRequest en el navegador y una instancia de
+          // http.ClientRequest en node.js
+          console.log(error.request);
+        } else {
+          // Algo paso al preparar la petición que lanzo un Error
+          console.log('Error', error.message);
+        }
+        console.log(error.config);
+      }
+    }
+  };
+
 
 
   useEffect(() => {
+    fetchToken()
   }, [dataToken])
   return (
     <loginContext.Provider value={{
@@ -486,6 +653,8 @@ const ProviderLogin = ({ children, navigation }) => {
       setVisibleModalReminders,
       getReminders,
       deleteReminders,
+      sendFCMNotification,
+      sendTokenDevices,
       visibleModalReminders,
       date,
       users,
