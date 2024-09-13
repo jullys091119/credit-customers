@@ -17,8 +17,7 @@ import Register from '../components/Register';
 import Customers from '../screens/Customers';
 import Reminders from '../components/Reminders';
 import payUser from '../components/PayUser';
-import Sales from '../components/Sales';
-
+import { Sale } from '../components/Sale';
 
 
 function HomeTabs() {
@@ -53,18 +52,7 @@ function HomeTabs() {
             />
           </> :
           <>
-           <Tab.Screen
-              name="Sales"
-              component={Sales}
-              options={{
-                tabBarLabel: "Sales",
-                headerShown: false,
-                tabBarIcon: ({ color, size }) => (
-                  <Icon source="message-text-clock-outline" color="#0093CE" size={37} />
-                ),
-              }}
 
-            />
             <Tab.Screen
               name="Creditos de clientes"
               component={Alphabet}
@@ -73,6 +61,18 @@ function HomeTabs() {
                 headerShown: false,
                 tabBarIcon: ({ color, size }) => (
                   <Icon source="dots-grid" color="#0093CE" size={40} />
+                ),
+              }}
+            />
+
+            <Tab.Screen
+              name="Ventas"
+              component={Sale}
+              options={{
+                tabBarLabel: "Sale",
+                headerShown: false,
+                tabBarIcon: ({ color, size }) => (
+                  <Icon source="sale" color="#0093CE" size={40} />
                 ),
               }}
             />
@@ -172,7 +172,7 @@ function MyStack() {
             },
           }}
         />
-        
+
       </Stack.Navigator>
     </NavigationContainer>
   );
