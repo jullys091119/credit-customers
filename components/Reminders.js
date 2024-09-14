@@ -102,7 +102,7 @@ const Reminders = () => {
   return (
     <PaperProvider>
       <View style={styles.header}>
-        <Text style={styles.headerTxt}>Recordatorios</Text>
+        <Text style={styles.headerTxt}>Reminders</Text>
       </View>
       <FlatList
         data={dataReminders}
@@ -125,7 +125,7 @@ const Reminders = () => {
       <Portal>
         <Modal visible={visibleModalReminders} onDismiss={() => setVisibleModalReminders(false)} contentContainerStyle={styles.modalContainerDate}>
           <View style={styles.headerModal}>
-            <Text style={styles.txtReminders}>Crear Recordatorio</Text>
+            <Text style={styles.txtReminders}>Add Reminder</Text>
             <View style={styles.bodyDate}>
               <TouchableWithoutFeedback onPress={() => setDateModalVisible(true)}>
                 <Icon source="calendar" color="#0093CE" size={37} />
@@ -134,7 +134,7 @@ const Reminders = () => {
           </View>
           <View style={styles.body}>
             <View style={styles.form}>
-              <Text style={styles.formTxt}>Recordatorio</Text>
+              <Text style={styles.formTxt}>Reminder</Text>
               <TextInput
                 mode="outlined"
                 multiline={true}
@@ -142,7 +142,7 @@ const Reminders = () => {
                 style={{ padding: 10, height: 180 }}
                 onChangeText={(txt) => setMsg(txt)}
               />
-              <Button onPress={handleAddReminder} style={{ backgroundColor: "#0093CE", borderWidth: 0, marginVertical: 15 }}>Crear</Button>
+              <Button onPress={handleAddReminder} style={{ backgroundColor: "#0093CE", borderWidth: 0, marginVertical: 15 }}>Create</Button>
             </View>
           </View>
         </Modal>

@@ -1,13 +1,26 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { Text, View, StyleSheet, Button, TouchableOpacity } from "react-native";
 import { CameraView, Camera } from "expo-camera";
 import { FAB, Provider as PaperProvider,Drawer } from 'react-native-paper';
-
+import { useIsFocused } from '@react-navigation/native';
+import { loginContext } from "../context/context";
 
 export default function Barcode() {
+  const  {
+    setScannedSale,
+    scannedSale,
+    setScannedSaleCode,
+    setSalesToDrupal,
+    dataDrupalSales,
+    setDataDrupalSales
+  }  = useContext(loginContext)
   const [hasPermission, setHasPermission] = useState(null);
-  const [scanned, setScanned] = useState(false);
 
+   
+ 
+
+  const isFocused = useIsFocused();
+  // console.log(isFocused, "ISFOCUSED")
   useEffect(() => {
     const getCameraPermissions = async () => {
       const { status } = await Camera.requestCameraPermissionsAsync();
@@ -17,9 +30,10 @@ export default function Barcode() {
     getCameraPermissions();
   }, []);
 
-  const handleBarcodeScanned = ({ type, data }) => {
-    setScanned(true);
-    alert(`Bar code with type ${type} and data ${data} has been scanned!`);
+  const handleBarcodeScanned = async ({ type, data }) => {
+    setScannedSale(true);
+    // alert(`Bar code with type ${type} and data ${data} has been scanned!`);
+    setScannedSaleCode(data)
   };
 
   if (hasPermission === null) {
@@ -28,45 +42,45 @@ export default function Barcode() {
   if (hasPermission === false) {
     return <Text>No access to camera</Text>;
   }
-  
-      
-
-
+   
   return (
     <View style={styles.container}>
-      <View style={{height:380, flexDirection: "column-reverse"}}>
+      <View style={{height:300, flexDirection: "column-reverse"}}>
+       
         <CameraView
-          onBarcodeScanned={scanned ? undefined : handleBarcodeScanned}
+          onBarcodeScanned={scannedSale ? undefined : handleBarcodeScanned}
           barcodeScannerSettings={{
             barcodeTypes: ["ean13", "upc_a"]
+            
           }}
+          
           style={StyleSheet.absoluteFillObject}
+          
           />
-          {scanned && (
+          {/* {scannedSale && (
          <TouchableOpacity style={{ display: "flex", justifyContent: "center", alignItems: "center", height:20,backgroundColor: "#0093CE"}}>
            <Text style={{color: "white"}}>Presiona el icono de Barcode</Text>
          </TouchableOpacity>
-      )}
+      )} */}
 
       </View>
-       {
-        scanned && (
+       {/* {
+        scannedSale && (
           <FAB
           icon="barcode-scan"
           style={styles.fab}
-          onPress={() => setScanned(false)}
+          onPress={() => setScannedSale(false)}
             color="white"
             />
         )
-       }
+       } */}
+    
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex:1,
-  },
+  
   fab: {
     width: 70,
     height: 70,
@@ -75,8 +89,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderRadius: 400,
     position: "absolute",
-    bottom: 20,
-    right: 20,
+    bottom: -360,
+    right: 10,
+    zIndex: 100,
    backgroundColor: "#0093CE"
   }
 });

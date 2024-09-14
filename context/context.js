@@ -8,6 +8,7 @@ import { Alert } from "react-native";
 import moment from "moment";
 import 'moment/locale/es';
 
+
 const loginContext = createContext();
 // Configura el módulo base-64
 if (!global.btoa) {
@@ -47,6 +48,15 @@ const ProviderLogin = ({ children, navigation }) => {
   const [confetti, setConfetti] = useState(false)
   const [dataToken, setDataToken] = useState("")
   const [tokenFirebaseAuth0, setTokenFirebaseAuth0] = useState("");
+  const [scanCodeProduct, setScanCodeProduct] = useState("")
+  const [nameProduct, setNameProduct] = useState('')
+  const [priceProduct, setPriceProduct] = useState("")
+  const [brandName, setBranName] = useState("")
+  const [Inventory, setInventory] = useState("")
+  const [scannedSale, setScannedSale] = useState(false);
+  const [scannedSaleCode, setScannedSaleCode] = useState("")
+  const [dataDrupalSales, setDataDrupalSales] = useState("");
+
 
   const getSalesNoteBook = async (id) => {
     const options = {
@@ -610,12 +620,92 @@ const ProviderLogin = ({ children, navigation }) => {
       }
     }
   };
+   
+
+
+  const setNewProductToDrupal = async (code,name,brand,price,count) => {
+    console.log(code, " ",name, ' ', brand, " ", price, " ", count  )
+   
+    try {
+      // Enviar el token a Drupal
+      const options = {
+        method: 'POST',
+        url: 'https://elalfaylaomega.com/credit-customer/jsonapi/node/inventario_productos',
+        headers: {
+          Accept: 'application/vnd.api+json',
+          Authorization: 'Authorization: Basic YXBpOmFwaQ==',
+          'Content-Type': 'application/vnd.api+json',
+          'X-CSRF-Token': tk,
+        },
+        data: {
+          data: { 
+            type: 'node--inventario_productos',
+            attributes: {
+              title: `Producto ${name} guardado exitosamente`,
+              field_codigo_producto: code,
+              field_nombre_producto: name,
+              field_marca_producto:  brand,
+              field_precio_producto: price,
+              field_inventario_producto: count,
+            }
+          },
+        },
+      };
+     
+        try {
+          const response = await axios.request(options);
+          if (response) {
+          }
+        } catch (error) {
+          console.error("Error al hacer la solicitud:", error);
+        }
+      
+      
+       
+     
+    } catch (error) {
+      console.error('Error al enviar notificación:', error);
+    }
+  }
+
+
+  const setSalesToDrupal = async () => {
+    const options = {
+      method: 'GET',
+      url: 'https://elalfaylaomega.com/credit-customer/jsonapi/node/inventario_productos',
+      headers: {
+        Accept: 'application/vnd.api+json',
+        Authorization: 'Authorization: Basic YXBpOmFwaQ==',
+      },
+    }
+    const response = await axios.request(options);
+    let details = []
+    const data = response.data.data.map((data)=>  data.attributes)
+    for (const key in data) {
+      
+      const listSale = {
+        code: data[key].field_codigo_producto,
+        inventory: data[key].field_inventario_producto,   
+        brand: data[key].field_marca_producto,
+        name:  data[key].field_nombre_producto,
+        price: data[key].field_precio_producto
+      }
+      
+     details.push(listSale)
+
+    }
+    
+    return details
+  
+  }  
+ 
 
 
 
   useEffect(() => {
+    setSalesToDrupal()
     fetchToken()
-  }, [dataToken])
+  }, [dataToken])  
   return (
     <loginContext.Provider value={{
       login,
@@ -648,13 +738,31 @@ const ProviderLogin = ({ children, navigation }) => {
       setMsg,
       setConfetti,
       setDataToken,
-      dataToken,
-      confetti,
+      setScanCodeProduct,
+      setNameProduct,
+      setPriceProduct,
+      setBranName,
+      setInventory,
       setVisibleModalReminders,
       getReminders,
       deleteReminders,
       sendFCMNotification,
       sendTokenDevices,
+      setNewProductToDrupal,
+      setSalesToDrupal,
+      setScannedSale,
+      dataDrupalSales,
+      setDataDrupalSales,
+      scannedSaleCode,
+      setScannedSaleCode,
+      scannedSale,
+      brandName,
+      priceProduct,
+      scanCodeProduct,
+      dataToken,
+      confetti,
+      nameProduct,
+      Inventory,
       visibleModalReminders,
       date,
       users,
