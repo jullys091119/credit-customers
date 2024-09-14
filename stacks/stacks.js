@@ -1,12 +1,21 @@
+
+// Only import react-native-gesture-handler on native platforms
+import 'react-native-reanimated';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createDrawerNavigator, DrawerContentScrollView } from '@react-navigation/drawer';
 import { NavigationContainer } from '@react-navigation/native';
 import { useContext, useEffect } from 'react';
 import { loginContext } from '../context/context';
+import { View, Text } from 'react-native';
+import { TouchableOpacity } from 'react-native-gesture-handler';
 
-import { Icon } from 'react-native-paper';
+
+import { Divider, Icon } from 'react-native-paper';
+
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
+const Drawer = createDrawerNavigator();
 
 //screens and components
 import Login from '../screens/Login';
@@ -18,7 +27,55 @@ import Customers from '../screens/Customers';
 import Reminders from '../components/Reminders';
 import payUser from '../components/PayUser';
 import { Sale } from '../components/Sale';
+import ProductRegister  from '../components/ProductRegister';
 
+
+
+function CustomDrawerContent({ navigation }) {
+  const addProductToDrupal = () => {
+    navigation.push("ProductRegister")  
+  }
+
+  return (
+    <DrawerContentScrollView style={{ backgroundColor: "#F7F9FC" }}>
+      <View style={{ height: 310 }}>
+        <View style={{ display: "flex", flexDirection: "row", gap: 10, alignItems: "center", marginHorizontal: 10, marginVertical: 20 }}>
+          <Icon
+            source="home-roof"
+            size={25}
+          />
+          <Text>Welcome</Text>
+        </View>
+        <TouchableOpacity onPress={addProductToDrupal}>
+          <View style={{ display: "flex", flexDirection: "row", gap: 10, alignItems: "center", marginHorizontal: 10, marginVertical: 20 }}>
+            <Icon
+              source="plus"
+              size={25}
+            />
+            <Text>Add Product</Text>
+          </View>
+        </TouchableOpacity>
+        <Divider></Divider>
+      </View>
+    </DrawerContentScrollView>
+
+  );
+}
+
+function MyDrawer() {
+  return (
+    <Drawer.Navigator drawerContent={props => <CustomDrawerContent {...props} initialRouteName="Home" />}>
+      <Drawer.Screen
+        name="HomeTabs"
+        component={HomeTabs}
+        options={{
+          headerShown: false,
+        }}
+      />
+    </Drawer.Navigator>
+  );
+
+}
 
 function HomeTabs() {
   const { uidUser, roles } = useContext(loginContext);
@@ -69,6 +126,7 @@ function HomeTabs() {
               name="Ventas"
               component={Sale}
               options={{
+                unmountOnBlur: true,
                 tabBarLabel: "Sale",
                 headerShown: false,
                 tabBarIcon: ({ color, size }) => (
@@ -116,6 +174,11 @@ function MyStack() {
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName='Home'>
+        <Stack.Screen
+          name="MyDrawer"
+          component={MyDrawer}
+          options={{ headerShown: false }}
+        />
         {tk ? (
           <Stack.Screen
             name="Home"
@@ -173,6 +236,19 @@ function MyStack() {
           }}
         />
 
+        <Stack.Screen
+          name="ProductRegister"
+          component={ProductRegister}
+        
+          options={{
+            unmountOnBlur: true,
+            title: "",
+            headerStyle: {
+              backgroundColor: '#f5f5f5',
+            },
+          }}
+        />
+
       </Stack.Navigator>
     </NavigationContainer>
   );
@@ -181,4 +257,4 @@ function MyStack() {
 
 
 
-export { MyStack }  
+export { MyStack, CustomDrawerContent }  
