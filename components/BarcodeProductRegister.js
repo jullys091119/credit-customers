@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext,useRef } from "react";
 import { Text, View, StyleSheet, Button, TouchableOpacity } from "react-native";
 import { CameraView, Camera, stopPreview } from "expo-camera";
 import { FAB, Provider as PaperProvider, Drawer } from 'react-native-paper';
@@ -7,6 +7,7 @@ import { loginContext } from "../context/context";
 
 
 export default function BarcodeProductRegister() {
+	const cameraRef = useRef(null);
 	const  { setScanCodeProduct} = useContext(loginContext)
 	const [hasPermission, setHasPermission] = useState(null);
 	const [scanned, setScanned] = useState(false);
@@ -44,6 +45,9 @@ export default function BarcodeProductRegister() {
 				barcodeScannerSettings={{
 					barcodeTypes: ["ean13", "upc_a"]
 				}}
+				ref={cameraRef}
+				enableTorch={false}
+				autoFocus="on"
 				style={StyleSheet.absoluteFillObject}
 			/>
 
