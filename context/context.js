@@ -55,7 +55,7 @@ const ProviderLogin = ({ children, navigation }) => {
   const [Inventory, setInventory] = useState("")
   const [scannedSale, setScannedSale] = useState(false);
   const [scannedSaleCode, setScannedSaleCode] = useState("")
-  const [dataDrupalSales, setDataDrupalSales] = useState("");
+  const [dataDrupalSale, setDataDrupalSale] = useState([])
 
 
   const getSalesNoteBook = async (id) => {
@@ -751,10 +751,10 @@ const ProviderLogin = ({ children, navigation }) => {
       setNewProductToDrupal,
       setSalesToDrupal,
       setScannedSale,
-      dataDrupalSales,
-      setDataDrupalSales,
       scannedSaleCode,
       setScannedSaleCode,
+      dataDrupalSale,
+      setDataDrupalSale,
       scannedSale,
       brandName,
       priceProduct,

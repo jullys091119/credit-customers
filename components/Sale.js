@@ -5,58 +5,35 @@ import { loginContext } from '../context/context';
 import { DataTable, Provider } from 'react-native-paper';
 
 export const Sale = () => {
-  const [data, setData] = useState([]); // Inicializar como un array vacío
   const [total, setTotal] = useState(0); // Inicializar como 0
-  const { setSalesToDrupal, scannedSaleCode } = useContext(loginContext);
+  const { dataDrupalSale, setSalesToDrupal,} = useContext(loginContext);
 
-  const handleGetItemToDrupal = async () => {
-    try {
-      const fetchedData = await setSalesToDrupal();
-      console.log(fetchedData, "fetchedData");
-
-      // Filtrar los datos basados en scannedSaleCode
-      const filteredData = fetchedData.filter(item => item.code === scannedSaleCode);
-
-      // Mapear los datos filtrados y agregarlos al estado acumulativo
-      const newSales = filteredData.map(item => ({
-        name: item.name,
-        brand: item.brand,
-        inventory: item.inventory,
-        price: parseFloat(item.price), // Asegúrate de que price sea un número
-      }));
-
-      // Actualizar el estado con los nuevos datos acumulativos
-      setData(prevData => [...prevData, ...newSales]);
-    } catch (error) {
-      console.error('Error fetching sales data:', error);
-    }
-  };
+  
 
   // Efecto para recalcular el total cada vez que `data` cambia
   useEffect(() => {
-    const totalPrice = data.reduce((accumulator, item) => accumulator + item.price, 0);
+    const totalPrice = dataDrupalSale.reduce((accumulator, item) => accumulator + item.price, 0);
     setTotal(totalPrice.toFixed(2)); // Ajusta el total a 2 decimales
-  }, [data]); // Dependencia para recalcular cuando `data` cambia
-
-  useEffect(() => {
-    handleGetItemToDrupal();
-  }, [scannedSaleCode]); // Dependencia añadida para actualizar datos cuando scannedSaleCode cambie
+  }, [dataDrupalSale]); // Dependencia para recalcular cuando `data` cambia
 
   return (
     <Provider>
       <View style={styles.container}>
         <Barcode /> 
-        <Text style={styles.title}>Total: ${total}</Text>
-        {data.length > 0 ? (
+        <View style={{display:"flex", flexDirection: "row", justifyContent: "space-between"}}>
+          <Text style={styles.title}>Total: ${total}</Text>
+          <Text style={styles.title}>Items: {dataDrupalSale.length}</Text>
+        </View>
+        {dataDrupalSale.length > 0 ? (
           <ScrollView>
             <DataTable>
               <DataTable.Header>
                 <DataTable.Title style={{ marginRight:-40}}>Products</DataTable.Title>
                 <DataTable.Title style={{ marginLeft:65}}>Brand</DataTable.Title>
-                <DataTable.Title numeric style={{ marginRight:30}}>Count</DataTable.Title>
-                <DataTable.Title numeric>Price</DataTable.Title>
+                <DataTable.Title numeric style={{ marginRight:10}}>Count</DataTable.Title>
+                <DataTable.Title numeric style={{ marginRight:15}}>Price</DataTable.Title>
               </DataTable.Header>
-              {data.map((item, index) => (
+              {dataDrupalSale.map((item, index) => (
                 <DataTable.Row
                   key={index} // Usar index como clave para filas
                   style={{
