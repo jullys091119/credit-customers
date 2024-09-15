@@ -321,7 +321,7 @@ const ProviderLogin = ({ children, navigation }) => {
 
   const addReminders = async (msg, date) => {
     const today = moment().utc().format('YYYY-MM-DDTHH:mm:ss[Z]');
-   
+
     const formattedDate = moment(date).utc().format(); // Use `.utc()` to get the correct UTC format
 
     const options = {
@@ -346,7 +346,7 @@ const ProviderLogin = ({ children, navigation }) => {
     };
 
     try {
-      
+
       const response = await axios.request(options);
       if (response) {
         setMsg("")
@@ -382,7 +382,7 @@ const ProviderLogin = ({ children, navigation }) => {
       })
   }
   const deleteReminders = (nid) => {
-    
+
 
     const url = `https://elalfaylaomega.com/credit-customer/node/` + nid;
 
@@ -468,7 +468,7 @@ const ProviderLogin = ({ children, navigation }) => {
 
   const setTokensNotifications = async (expoPushToken) => {
     console.log(expoPushToken, "data context")
-   
+
     try {
       // Enviar el token a Drupal
       const options = {
@@ -481,7 +481,7 @@ const ProviderLogin = ({ children, navigation }) => {
           'X-CSRF-Token': tk,
         },
         data: {
-          data: { 
+          data: {
             type: 'node--notification-push',
             attributes: {
               title: 'tokens guardados',
@@ -490,18 +490,18 @@ const ProviderLogin = ({ children, navigation }) => {
           },
         },
       };
-     
-        try {
-          const response = await axios.request(options);
-          if (response) {
-          }
-        } catch (error) {
-          console.error("Error al hacer la solicitud:", error);
+
+      try {
+        const response = await axios.request(options);
+        if (response) {
         }
-      
-      
-       
-     
+      } catch (error) {
+        console.error("Error al hacer la solicitud:", error);
+      }
+
+
+
+
     } catch (error) {
       console.error('Error al enviar notificación:', error);
     }
@@ -520,7 +520,7 @@ const ProviderLogin = ({ children, navigation }) => {
         console.error('Token not found in response');
         return null;
       }
-    } catch (error) {  
+    } catch (error) {
       // Maneja errores y muestra información detallada
       if (error.response) {
         // La solicitud se hizo y el servidor respondió con un estado de error
@@ -543,7 +543,7 @@ const ProviderLogin = ({ children, navigation }) => {
       return null;
     }
   };
-  
+
 
 
   // Get token devices from Drupal
@@ -576,9 +576,9 @@ const ProviderLogin = ({ children, navigation }) => {
     const FCM_URL = 'https://fcm.googleapis.com/v1/projects/credit-customers-69505/messages:send';
     const FCM_SERVER_KEY = tokenFirebaseAuth0;
     console.log(FCM_SERVER_KEY, "fcm server")
-    
-    const filter = tokenDeviceDrupalNotify.filter((tk)=> tk !== tokenDevice )
-  
+
+    const filter = tokenDeviceDrupalNotify.filter((tk) => tk !== tokenDevice)
+
     for (const token of filter) {
       try {
         const response = await axios.post(
@@ -620,12 +620,12 @@ const ProviderLogin = ({ children, navigation }) => {
       }
     }
   };
-   
 
 
-  const setNewProductToDrupal = async (code,name,brand,price,count) => {
-    console.log(code, " ",name, ' ', brand, " ", price, " ", count  )
-   
+
+  const setNewProductToDrupal = async (code, name, brand, price, count) => {
+    console.log(code, " ", name, ' ', brand, " ", price, " ", count)
+
     try {
       // Enviar el token a Drupal
       const options = {
@@ -638,31 +638,31 @@ const ProviderLogin = ({ children, navigation }) => {
           'X-CSRF-Token': tk,
         },
         data: {
-          data: { 
+          data: {
             type: 'node--inventario_productos',
             attributes: {
               title: `Producto ${name} guardado exitosamente`,
               field_codigo_producto: code,
               field_nombre_producto: name,
-              field_marca_producto:  brand,
+              field_marca_producto: brand,
               field_precio_producto: price,
               field_inventario_producto: count,
             }
           },
         },
       };
-     
-        try {
-          const response = await axios.request(options);
-          if (response) {
-          }
-        } catch (error) {
-          console.error("Error al hacer la solicitud:", error);
+
+      try {
+        const response = await axios.request(options);
+        if (response) {
         }
-      
-      
-       
-     
+      } catch (error) {
+        console.error("Error al hacer la solicitud:", error);
+      }
+
+
+
+
     } catch (error) {
       console.error('Error al enviar notificación:', error);
     }
@@ -680,32 +680,81 @@ const ProviderLogin = ({ children, navigation }) => {
     }
     const response = await axios.request(options);
     let details = []
-    const data = response.data.data.map((data)=>  data.attributes)
+    const data = response.data.data.map((data) => data.attributes)
     for (const key in data) {
-      
+
       const listSale = {
         code: data[key].field_codigo_producto,
-        inventory: data[key].field_inventario_producto,   
+        inventory: data[key].field_inventario_producto,
         brand: data[key].field_marca_producto,
-        name:  data[key].field_nombre_producto,
+        name: data[key].field_nombre_producto,
         price: data[key].field_precio_producto
       }
-      
-     details.push(listSale)
+      details.push(listSale)
 
     }
-    
-    return details
-  
-  }  
- 
 
+    return details
+
+  }
+
+  const sendSalesToDrupal = async (array, total) => {
+    const arrString = JSON.stringify(array);
+    console.log(arrString, "arr")
+    try {
+      // Log para verificar los datos
+      console.log(array);
+      // Configuración de la solicitud
+      const options = {
+        method: 'POST',
+        url: 'https://elalfaylaomega.com/credit-customer/jsonapi/node/all_sales',
+        headers: {
+          Accept: 'application/vnd.api+json',
+          Authorization: 'Authorization: Basic YXBpOmFwaQ==',
+          'Content-Type': 'application/vnd.api+json',
+          'X-CSRF-Token': tk,
+        },
+        data: {
+          data: {
+            type: 'node--all_sales',
+            attributes: {
+              title: `Productos guardado exitosamente`,
+              field_descripcion_venta: arrString,
+              field_total_producto_venta: total
+            }
+          }
+        },
+      }
+
+      // Hacer la solicitud
+      const response = await axios(options);
+      console.log('Response:', response.data); // Log para verificar la respuesta
+
+    } catch (error) {
+      if (error.response) {
+        // La respuesta fue hecha y el servidor respondió con un código de estado
+        // que esta fuera del rango de 2xx
+        console.log(error.response.data);
+        console.log(error.response.status);
+        console.log(error.response.headers);
+      } else if (error.request) {
+        // La petición fue hecha pero no se recibió respuesta
+        // `error.request` es una instancia de XMLHttpRequest en el navegador y una instancia de
+        // http.ClientRequest en node.js
+        console.log(error.request);
+      } else {
+        // Algo paso al preparar la petición que lanzo un Error
+        console.log('Error', error.message);
+      }
+      console.log(error.config);
+    }
+  };
 
 
   useEffect(() => {
     setSalesToDrupal()
     fetchToken()
-  }, [dataToken])  
+  }, [dataToken])
   return (
     <loginContext.Provider value={{
       login,
@@ -755,6 +804,7 @@ const ProviderLogin = ({ children, navigation }) => {
       setScannedSaleCode,
       dataDrupalSale,
       setDataDrupalSale,
+      sendSalesToDrupal,
       scannedSale,
       brandName,
       priceProduct,

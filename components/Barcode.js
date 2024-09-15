@@ -2,9 +2,8 @@ import React, { useState, useEffect, useContext,useRef } from "react";
 import { Text, View, StyleSheet, Button, TouchableOpacity } from "react-native";
 import { CameraView, Camera } from "expo-camera";
 import { FAB, Provider as PaperProvider,Drawer } from 'react-native-paper';
-import { useIsFocused } from '@react-navigation/native';
 import { loginContext } from "../context/context";
-
+import { Audio } from 'expo-av';
 
 export default function Barcode() {
   const  {
@@ -31,6 +30,7 @@ export default function Barcode() {
   useEffect(()=> {
 
   },[codeScanner])
+  
 
   const handleBarcodeScanned = async ({ type, data }) => {
     // alert(`Bar code with type ${type} and data ${data} has been scanned!`);
@@ -73,7 +73,6 @@ export default function Barcode() {
     }
   };
 
- 
 
   return (
     <View style={styles.container}>
