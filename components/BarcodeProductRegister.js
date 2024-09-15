@@ -23,7 +23,7 @@ export default function BarcodeProductRegister() {
 	
 	const handleBarcodeScanned = ({ type, data }) => {
 		setScanned(true);
-		alert(`Bar code with type ${type} and data ${data} has been scanned!`);
+		// alert(`Bar code with type ${type} and data ${data} has been scanned!`);
 		setScanCodeProduct(data)
 	};
 
@@ -47,12 +47,12 @@ export default function BarcodeProductRegister() {
 				style={StyleSheet.absoluteFillObject}
 			/>
 
-			{/* {scanned && (
+			{scanned && (
 				<TouchableOpacity style={{ display: "flex", justifyContent: "center", alignItems: "center", height: 20, backgroundColor: "#0093CE" }}>
 					<Text style={{ color: "white" }}>Presiona el icono de Barcode</Text>
 				</TouchableOpacity>
-			)} */}
-			{/* {
+			)} 
+			{
 				scanned && (
 					<FAB
 						icon="barcode-scan"
@@ -61,7 +61,7 @@ export default function BarcodeProductRegister() {
 						color="white"
 					/>
 				)
-			} */}
+			}
 
 		</View>
 
