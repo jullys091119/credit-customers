@@ -56,6 +56,7 @@ const ProviderLogin = ({ children, navigation }) => {
   const [scannedSale, setScannedSale] = useState(false);
   const [scannedSaleCode, setScannedSaleCode] = useState("")
   const [dataDrupalSale, setDataDrupalSale] = useState([])
+  const [newTicket , setNewTicket] = useState([])
 
 
   const getSalesNoteBook = async (id) => {
@@ -621,8 +622,6 @@ const ProviderLogin = ({ children, navigation }) => {
     }
   };
 
-
-
   const setNewProductToDrupal = async (code, name, brand, price, count) => {
     console.log(code, " ", name, ' ', brand, " ", price, " ", count)
 
@@ -659,10 +658,6 @@ const ProviderLogin = ({ children, navigation }) => {
       } catch (error) {
         console.error("Error al hacer la solicitud:", error);
       }
-
-
-
-
     } catch (error) {
       console.error('Error al enviar notificación:', error);
     }
@@ -700,7 +695,7 @@ const ProviderLogin = ({ children, navigation }) => {
 
   const sendSalesToDrupal = async (array, total) => {
     const arrString = JSON.stringify(array);
-    console.log(arrString, "arr")
+    // console.log(arrString, "arr")
     try {
       // Log para verificar los datos
       console.log(array);
@@ -718,7 +713,7 @@ const ProviderLogin = ({ children, navigation }) => {
           data: {
             type: 'node--all_sales',
             attributes: {
-              title: `Productos guardado exitosamente`,
+              title: `Venta realizada exitosamente`,
               field_descripcion_venta: arrString,
               field_total_producto_venta: total
             }
@@ -751,7 +746,37 @@ const ProviderLogin = ({ children, navigation }) => {
   };
 
 
+  const  getTicketsDrupal =async() => {
+   options = {
+    method: "GET", 
+    url: "https://elalfaylaomega.com/credit-customer/jsonapi/node/all_sales",
+    headers: {
+      Accept: 'application/vnd.api+json',
+      Authorization: 'Authorization: Basic YXBpOmFwaQ==',
+      'Content-Type': 'application/vnd.api+json',
+      'X-CSRF-Token': tk,
+    }
+   }
+
+   const response = await axios(options)
+   let  sendItem = []
+    const currentTickets = response.data.data.map((item,index)=> ({
+      id: index,
+      description: JSON.parse(item.attributes.field_descripcion_venta),
+      total: item.attributes.field_total_producto_venta
+    }))
+    sendItem.push(currentTickets)
+    let auxArr ;
+    for (const key in sendItem) {
+      auxArr =  sendItem[key] 
+    }
+
+    return auxArr
+  } 
+
+
   useEffect(() => {
+    getTicketsDrupal()
     setSalesToDrupal()
     fetchToken()
   }, [dataToken])
@@ -800,6 +825,7 @@ const ProviderLogin = ({ children, navigation }) => {
       setNewProductToDrupal,
       setSalesToDrupal,
       setScannedSale,
+      getTicketsDrupal,
       scannedSaleCode,
       setScannedSaleCode,
       dataDrupalSale,

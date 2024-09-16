@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useContext,useRef } from "react";
+import React, { useState, useEffect, useContext, useRef } from "react";
 import { Text, View, StyleSheet, Button, TouchableOpacity } from "react-native";
 import { CameraView, Camera, stopPreview } from "expo-camera";
 import { FAB, Provider as PaperProvider, Drawer } from 'react-native-paper';
@@ -8,7 +8,7 @@ import { loginContext } from "../context/context";
 
 export default function BarcodeProductRegister() {
 	const cameraRef = useRef(null);
-	const  { setScanCodeProduct} = useContext(loginContext)
+	const { setScanCodeProduct } = useContext(loginContext)
 	const [hasPermission, setHasPermission] = useState(null);
 	const [scanned, setScanned] = useState(false);
 
@@ -17,11 +17,10 @@ export default function BarcodeProductRegister() {
 			const { status } = await Camera.requestCameraPermissionsAsync();
 			setHasPermission(status === "granted");
 		};
-
 		getCameraPermissions();
 	}, []);
-    
-	
+
+
 	const handleBarcodeScanned = ({ type, data }) => {
 		setScanned(true);
 		// alert(`Bar code with type ${type} and data ${data} has been scanned!`);
@@ -35,8 +34,6 @@ export default function BarcodeProductRegister() {
 		return <Text>No access to camera</Text>;
 	}
 
-
-
 	return (
 		<View style={{ height: 200, flexDirection: "column-reverse" }}>
 
@@ -46,7 +43,7 @@ export default function BarcodeProductRegister() {
 					barcodeTypes: ["ean13", "upc_a"]
 				}}
 				ref={cameraRef}
-				enableTorch={false}
+				enableTorch={true}
 				autoFocus="on"
 				style={StyleSheet.absoluteFillObject}
 			/>
@@ -55,7 +52,7 @@ export default function BarcodeProductRegister() {
 				<TouchableOpacity style={{ display: "flex", justifyContent: "center", alignItems: "center", height: 20, backgroundColor: "#0093CE" }}>
 					<Text style={{ color: "white" }}>Presiona el icono de Barcode</Text>
 				</TouchableOpacity>
-			)} 
+			)}
 			{
 				scanned && (
 					<FAB
@@ -66,9 +63,7 @@ export default function BarcodeProductRegister() {
 					/>
 				)
 			}
-
 		</View>
-
 	);
 }
 

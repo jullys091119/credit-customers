@@ -4,7 +4,6 @@ import Barcode from './Barcode';
 import { loginContext } from '../context/context';
 import { DataTable, Provider } from 'react-native-paper';
 import { TouchableOpacity } from 'react-native-gesture-handler';
-
 export const Sale = () => {
   const [total, setTotal] = useState(0); // Inicializar como 0
   const { dataDrupalSale, setSalesToDrupal, sendSalesToDrupal,setDataDrupalSale } = useContext(loginContext);
@@ -18,7 +17,6 @@ export const Sale = () => {
   }, [dataDrupalSale]); // Dependencia para recalcular cuando `data` cambia
 
   const handleSendSalesToDrupal = () => {
-    // Llamar a la función de envío con todos los datos
     sendSalesToDrupal(dataDrupalSale, total);
     setDataDrupalSale("")
     setTotal("")
