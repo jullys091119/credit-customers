@@ -31,13 +31,11 @@ export default function Barcode() {
 
   },[codeScanner])
   
-
   const handleBarcodeScanned = async ({ type, data }) => {
     // alert(`Bar code with type ${type} and data ${data} has been scanned!`);
     setScannedSale(true);
     await handleGetItemToDrupal(data)
   };
-
 
   if (hasPermission === null) {
     return <Text>Requesting for camera permission</Text>;
@@ -45,7 +43,6 @@ export default function Barcode() {
   if (hasPermission === false) {
     return <Text>No access to camera</Text>;
   }
-
 
   const handleGetItemToDrupal = async (code) => {
     try {
@@ -73,17 +70,16 @@ export default function Barcode() {
     }
   };
 
-
   return (
     <View style={styles.container}>
       <View style={{height:300, flexDirection: "column-reverse"}}>
         <CameraView
           onBarcodeScanned={scannedSale ? undefined : handleBarcodeScanned}
           barcodeScannerSettings={{
-            barcodeTypes: ["ean13", "upc_a"]  
+            barcodeTypes: ["ean13", "upc_a"]   
           }}
           ref={cameraRef}
-          enableTorch={false}
+          enableTorch={true}
           autoFocus="on"
           style={StyleSheet.absoluteFillObject}
           />

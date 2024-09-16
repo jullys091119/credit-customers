@@ -28,12 +28,16 @@ import Reminders from '../components/Reminders';
 import payUser from '../components/PayUser';
 import { Sale } from '../components/Sale';
 import ProductRegister  from '../components/ProductRegister';
-
+import Tickets from '../components/Tickets';
 
 
 function CustomDrawerContent({ navigation }) {
   const addProductToDrupal = () => {
     navigation.push("ProductRegister")  
+  }
+
+  const handleShowTickets = () => {
+    navigation.push("Tickets")
   }
 
   return (
@@ -53,6 +57,16 @@ function CustomDrawerContent({ navigation }) {
               size={25}
             />
             <Text>Add Product</Text>
+          </View>
+        </TouchableOpacity>
+        <Divider></Divider>
+        <TouchableOpacity onPress={handleShowTickets}>
+          <View style={{ display: "flex", flexDirection: "row", gap: 10, alignItems: "center", marginHorizontal: 10, marginVertical: 20 }}>
+            <Icon
+              source="ticket-outline"
+              size={25}
+            />
+            <Text>Show Tickets</Text>
           </View>
         </TouchableOpacity>
         <Divider></Divider>
@@ -248,6 +262,19 @@ function MyStack() {
             },
           }}
         />
+
+        <Stack.Screen
+          name="Tickets"
+          component={Tickets}
+          options={{
+            unmountOnBlur: true,
+            title: "",
+            headerStyle: {
+              backgroundColor: '#f5f5f5',
+            },
+          }}
+        />
+
 
       </Stack.Navigator>
     </NavigationContainer>
