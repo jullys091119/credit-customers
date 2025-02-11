@@ -56,7 +56,9 @@ const ProviderLogin = ({ children, navigation }) => {
   const [scannedSale, setScannedSale] = useState(false);
   const [scannedSaleCode, setScannedSaleCode] = useState("")
   const [dataDrupalSale, setDataDrupalSale] = useState([])
-  const [newTicket , setNewTicket] = useState([])
+  const [newTicket, setNewTicket] = useState([])
+  const [nameProductsInventory, setNameProductsInventory ] = useState([]);
+
 
 
   const getSalesNoteBook = async (id) => {
@@ -746,39 +748,61 @@ const ProviderLogin = ({ children, navigation }) => {
   };
 
 
-  const  getTicketsDrupal =async() => {
-   options = {
-    method: "GET", 
-    url: "https://elalfaylaomega.com/credit-customer/jsonapi/node/all_sales",
-    headers: {
-      Accept: 'application/vnd.api+json',
-      Authorization: 'Authorization: Basic YXBpOmFwaQ==',
-      'Content-Type': 'application/vnd.api+json',
-      'X-CSRF-Token': tk,
+  const getTicketsDrupal = async () => {
+    options = {
+      method: "GET",
+      url: "https://elalfaylaomega.com/credit-customer/jsonapi/node/all_sales",
+      headers: {
+        Accept: 'application/vnd.api+json',
+        Authorization: 'Authorization: Basic YXBpOmFwaQ==',
+        'Content-Type': 'application/vnd.api+json',
+        'X-CSRF-Token': tk,
+      }
     }
-   }
 
-   const response = await axios(options)
-   let  sendItem = []
-    const currentTickets = response.data.data.map((item,index)=> ({
+    const response = await axios(options)
+    let sendItem = []
+    const currentTickets = response.data.data.map((item, index) => ({
       id: index,
       description: JSON.parse(item.attributes.field_descripcion_venta),
       total: item.attributes.field_total_producto_venta
     }))
     sendItem.push(currentTickets)
-    let auxArr ;
+    let auxArr;
     for (const key in sendItem) {
-      auxArr =  sendItem[key] 
+      auxArr = sendItem[key]
     }
 
     return auxArr
-  } 
+  }
 
+  const getInventoryProducts = async () => {
+    options = {
+      method: 'GET',
+      url: 'https://elalfaylaomega.com/credit-customer/jsonapi/node/inventario_productos',
+      headers: {
+        Accept: 'application/vnd.api+json',
+        Authorization: 'Authorization: Basic YXBpOmFwaQ==',
+        'Content-Type': 'application/vnd.api+json',
+        'X-CSRF-Token': tk,
+      }
+    }
+
+    const response = await axios(options)
+    if (response.status === 200) {
+      let names = []
+      response.data.data.forEach((el)=> {
+        names.push(el.attributes.field_nombre_producto)
+      })
+      setNameProductsInventory(names)
+    }
+  }
 
   useEffect(() => {
-    getTicketsDrupal()
-    setSalesToDrupal()
-    fetchToken()
+    getTicketsDrupal();
+    setSalesToDrupal();
+    fetchToken();
+    getInventoryProducts();
   }, [dataToken])
   return (
     <loginContext.Provider value={{
@@ -856,7 +880,8 @@ const ProviderLogin = ({ children, navigation }) => {
       idUserSale,
       total,
       valueSale,
-      msg
+      msg,
+      nameProductsInventory
     }}>
       {children}
     </loginContext.Provider>

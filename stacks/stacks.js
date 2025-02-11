@@ -27,13 +27,14 @@ import Customers from '../screens/Customers';
 import Reminders from '../components/Reminders';
 import payUser from '../components/PayUser';
 import { Sale } from '../components/Sale';
-import ProductRegister  from '../components/ProductRegister';
+import ProductRegister from '../components/ProductRegister';
 import Tickets from '../components/Tickets';
+import { Inventory } from '../components/Inventory';
 
 
 function CustomDrawerContent({ navigation }) {
   const addProductToDrupal = () => {
-    navigation.push("ProductRegister")  
+    navigation.push("ProductRegister")
   }
 
   const handleShowTickets = () => {
@@ -129,6 +130,18 @@ function HomeTabs() {
               component={Alphabet}
               options={{
                 tabBarLabel: "Notebook",
+                headerShown: false,
+                tabBarIcon: ({ color, size }) => (
+                  <Icon source="dots-grid" color="#0093CE" size={40} />
+                ),
+              }}
+            />
+
+            <Tab.Screen
+              name="Inventario"
+              component={Inventory}
+              options={{
+                tabBarLabel: "Inventory",
                 headerShown: false,
                 tabBarIcon: ({ color, size }) => (
                   <Icon source="dots-grid" color="#0093CE" size={40} />
@@ -253,7 +266,7 @@ function MyStack() {
         <Stack.Screen
           name="ProductRegister"
           component={ProductRegister}
-        
+
           options={{
             unmountOnBlur: true,
             title: "",
