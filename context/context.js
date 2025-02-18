@@ -57,7 +57,8 @@ const ProviderLogin = ({ children, navigation }) => {
   const [scannedSaleCode, setScannedSaleCode] = useState("")
   const [dataDrupalSale, setDataDrupalSale] = useState([])
   const [newTicket, setNewTicket] = useState([])
-  const [nameProductsInventory, setNameProductsInventory ] = useState([]);
+  const [nameProductsInventory, setNameProductsInventory] = useState([]);
+  const [newOrder, setNewOrder] = useState([])
 
 
 
@@ -777,32 +778,165 @@ const ProviderLogin = ({ children, navigation }) => {
   }
 
   const getInventoryProducts = async () => {
+    try {
+      const options = {
+        method: 'GET',
+        url: 'https://elalfaylaomega.com/credit-customer/api/allProducts',
+        headers: {
+          'Content-Type': 'application/vnd.api+json',
+          'X-CSRF-Token': tk,
+        }
+      }
+
+      const response = await axios(options);
+      console.log(response.data[0].field_inventario_producto)
+
+      if (response.status === 200) {
+        let names = [];
+        response.data.forEach((el, i) => {
+          if (el.field_nombre_producto && el.field_nombre_producto[0]?.value) {
+
+            const producto = {
+              name: el.field_nombre_producto[0].value,
+              image: el.field_imagen_producto_inventario?.[0]?.url || null // Extraemos la URL si está disponible
+            }
+
+            names.push(producto);
+          }
+        });
+
+        setNameProductsInventory(names);
+      }
+    } catch (error) {
+      console.error('Error fetching inventory products:', error);
+    }
+  }
+
+
+
+  const setNewOrderProducts = async (name, quantity) => {
+    try {
+      // Log CSRF token for debugging
+      console.log("CSRF Token: ", tk);  // Ensure the token is valid
+
+      // Configuración de la solicitud
+      const options = {
+        method: 'POST',
+        url: 'https://elalfaylaomega.com/credit-customer/jsonapi/node/new_order',
+        headers: {
+          Accept: 'application/vnd.api+json',
+          Authorization: 'Basic YXBpOmFwaQ==',  // Ensure this is correct
+          'Content-Type': 'application/vnd.api+json',
+          'X-CSRF-Token': tk,  // Ensure this token is valid
+        },
+        data: {
+          data: {
+            type: 'node--new_order',
+            attributes: {
+              title: `Producto agregado a una nueva orden`,
+              field_nombre_producto_orden: name,
+              field_cantidad_producto_pedido: quantity,
+              field_isselected: true,  // Adjust if necessary
+            }
+          }
+        },
+      };
+
+      // Hacer la solicitud
+      const response = await axios(options);
+      console.log('Response:', response.data);  // Log to verify the response
+
+    } catch (error) {
+      if (error.response) {
+        console.log('Error Response Data:', error.response.data);
+        console.log('Error Response Status:', error.response.status);
+        console.log('Error Response Headers:', error.response.headers);
+      } else if (error.request) {
+        console.log('Error Request:', error.request);
+      } else {
+        console.log('Error Message:', error.message);
+      }
+      console.log('Error Config:', error.config);
+    }
+  };
+
+
+
+  const getNewOrderProducts = async () => {
     options = {
       method: 'GET',
-      url: 'https://elalfaylaomega.com/credit-customer/jsonapi/node/inventario_productos',
+      url: 'https://elalfaylaomega.com/credit-customer/jsonapi/node/new_order?include=field_image_product_order',
       headers: {
-        Accept: 'application/vnd.api+json',
-        Authorization: 'Authorization: Basic YXBpOmFwaQ==',
         'Content-Type': 'application/vnd.api+json',
         'X-CSRF-Token': tk,
       }
     }
 
     const response = await axios(options)
+    const img = response.data.included;
     if (response.status === 200) {
-      let names = []
-      response.data.data.forEach((el)=> {
-        names.push(el.attributes.field_nombre_producto)
+      const dataOrder = []
+      response.data.data.forEach((el, index) => {
+        console.log(el.id)
+        const newOrder = {
+          id: el.id,
+          name: el.attributes.field_nombre_producto_orden,
+          quantity: el.attributes.field_cantidad_producto_pedido,
+          selected: el.attributes.field_isselected,
+          image: img
+        }
+        dataOrder.push(newOrder)
       })
-      setNameProductsInventory(names)
+
+      setNewOrder(dataOrder)
+
     }
   }
+
+
+
+  const removeAllOrderProducts = () => {
+    console.log(newOrder, "nueva orden para borrar");
+
+    // Iteramos sobre todos los productos en `newOrder`
+    newOrder.forEach((product) => {
+      const productId = product.id || product.drupal_internal__nid;  // Usamos `id` o `drupal_internal__nid` del producto
+
+      if (productId) {
+        const options = {
+          method: 'DELETE',
+          url: `https://elalfaylaomega.com/credit-customer/jsonapi/node/new_order/${productId}`,  // Usamos el ID del producto o pedido
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: 'Basic Og=='  // Asegúrate de que tu token de autorización sea correcto
+          },
+        };
+
+        axios
+          .request(options)
+          .then(function (response) {
+            console.log('Producto eliminado:', response.data);
+          })
+          .catch(function (error) {
+            console.error('Error al eliminar el producto:', error.response ? error.response.data : error.message);
+          });
+      } else {
+        console.log('ID del producto no encontrado, no se puede eliminar:', product);
+      }
+    });
+  };
+
+
+
 
   useEffect(() => {
     getTicketsDrupal();
     setSalesToDrupal();
     fetchToken();
     getInventoryProducts();
+    getNewOrderProducts()
+
+
   }, [dataToken])
   return (
     <loginContext.Provider value={{
@@ -855,6 +989,10 @@ const ProviderLogin = ({ children, navigation }) => {
       dataDrupalSale,
       setDataDrupalSale,
       sendSalesToDrupal,
+      setNewOrderProducts,
+      getNewOrderProducts,
+      setNewOrder,
+      removeAllOrderProducts,
       scannedSale,
       brandName,
       priceProduct,
@@ -881,7 +1019,8 @@ const ProviderLogin = ({ children, navigation }) => {
       total,
       valueSale,
       msg,
-      nameProductsInventory
+      nameProductsInventory,
+      newOrder
     }}>
       {children}
     </loginContext.Provider>
